@@ -11,7 +11,45 @@ import { AuthScreen } from './components/AuthScreen';
 import { PurchaseModal } from './components/PurchaseModal';
 import { supabase } from './services/supabaseClient';
 
+const MissingSecretsScreen: React.FC = () => (
+  <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">
+    <div className="w-full max-w-lg p-8 space-y-4 bg-ocs-darker rounded-2xl shadow-2xl text-center border border-ocs-light/20">
+      <h1 className="text-2xl font-bold text-red-400">Erro de Configuração</h1>
+      <p className="text-ocs-text-dim">
+        A URL e a Chave do Supabase não foram configuradas corretamente.
+      </p>
+      <div className="text-left bg-ocs-dark p-4 mt-4 rounded-lg border border-ocs-light/20">
+        <p className="text-ocs-text-dim text-sm font-semibold mb-2">
+          Por favor, siga estes passos:
+        </p>
+        <ol className="text-sm text-ocs-text space-y-2 list-decimal list-inside">
+          <li>Clique no ícone de <strong>Secrets</strong> (🔑) na barra de ferramentas à esquerda.</li>
+          <li>Adicione duas novas chaves com os nomes e valores do seu projeto Supabase.</li>
+        </ol>
+        <div className="text-left text-sm text-white bg-black/30 p-3 my-3 rounded-md space-y-2 font-mono">
+          <div>
+            <p><strong>Name:</strong> <code>SUPABASE_URL</code></p>
+            <p className="text-ocs-text-dim text-xs"><strong>Value:</strong> <code>&lt;Sua URL do Projeto Supabase&gt;</code></p>
+          </div>
+          <div className="pt-1">
+            <p><strong>Name:</strong> <code>SUPABASE_ANON_KEY</code></p>
+            <p className="text-ocs-text-dim text-xs"><strong>Value:</strong> <code>&lt;Sua Chave Pública 'anon'&gt;</code></p>
+          </div>
+        </div>
+        <p className="text-ocs-text-dim text-sm">
+          3. Após adicionar os segredos, <strong>atualize esta página de preview</strong>.
+        </p>
+      </div>
+    </div>
+  </div>
+);
+
+
 const App: React.FC = () => {
+  if (!supabase) {
+    return <MissingSecretsScreen />;
+  }
+
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant>(ASSISTANTS[0]);
   const [chatHistories, setChatHistories] = useState<Record<string, ChatSession[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);

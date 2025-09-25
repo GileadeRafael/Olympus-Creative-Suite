@@ -1,12 +1,19 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// IMPORTANT: Replace with your actual Supabase URL and Anon Key
-// It's recommended to use environment variables for this.
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Supabase URL or Anon Key is not set in environment variables.");
+function initializeSupabase(): SupabaseClient | null {
+  if (supabaseUrl && supabaseAnonKey) {
+    try {
+      return createClient(supabaseUrl, supabaseAnonKey);
+    } catch (error) {
+      console.error("Error creating Supabase client:", error);
+      return null;
+    }
+  }
+  console.warn("Supabase URL or Anon Key is not set in environment variables. Please set SUPABASE_URL and SUPABASE_ANON_KEY in your project's Secrets.");
+  return null;
 }
 
-export const supabase = createClient(supabaseUrl!, supabaseAnonKey!);
+export const supabase = initializeSupabase();
