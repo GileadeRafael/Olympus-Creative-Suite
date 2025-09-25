@@ -1,7 +1,7 @@
-
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Assistant } from '../constants';
 import type { ChatMessage, Part } from '../types';
+import { CONFIG } from './config';
 
 let ai: GoogleGenAI | null = null;
 
@@ -12,14 +12,14 @@ function getAiClient(): GoogleGenAI {
   if (ai) {
     return ai;
   }
+  
+  const apiKey = CONFIG.API_KEY;
 
-  // FIX: Use process.env.API_KEY as required by the coding guidelines.
-  const apiKey = process.env.API_KEY;
-
-  if (!apiKey) {
-    // This error is critical. The app cannot function without the API key.
-    // Throwing an error makes the configuration issue immediately obvious during development.
-    throw new Error("Gemini API Key is missing. Please set API_KEY in your environment variables.");
+  if (apiKey.startsWith("COLE_SUA") || !apiKey) {
+    const errorMessage = "Chave da API da Gemini não configurada. Por favor, edite o arquivo 'services/config.ts' e adicione sua API Key.";
+    console.error(errorMessage);
+    // The Supabase client will likely throw first, but this is a fallback.
+    throw new Error(errorMessage);
   }
   
   ai = new GoogleGenAI({ apiKey });

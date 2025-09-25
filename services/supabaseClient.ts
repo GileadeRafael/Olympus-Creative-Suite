@@ -1,18 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
+import { CONFIG } from './config';
 
-// Environment variables are exposed on `process.env`.
-// FIX: Switched from import.meta.env to process.env to fix TypeScript errors
-// and maintain consistency with other services.
-const supabaseUrl = process.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = CONFIG.SUPABASE_URL;
+const supabaseAnonKey = CONFIG.SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
-    // This error is critical for developers. The app cannot function without these keys.
-    // We throw an error to make the configuration issue immediately obvious and prevent
-    // the app from getting stuck in a loading state with a cryptic error.
-    throw new Error("Supabase credentials missing. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment variables.");
+if (supabaseUrl.startsWith("COLE_SUA") || supabaseAnonKey.startsWith("COLE_SUA") || !supabaseUrl || !supabaseAnonKey) {
+    const errorMessage = "Credenciais da Supabase não configuradas. Por favor, edite o arquivo 'services/config.ts' e adicione sua URL e Chave Anon da Supabase.";
+    console.error(errorMessage);
+    // Also display it on the screen for better visibility
+    document.body.innerHTML = `<div style="padding: 2rem; font-family: sans-serif; color: #ffcccc; background: #330000; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center;"><div><h1>Erro de Configuração</h1><p>${errorMessage}</p></div></div>`;
+    throw new Error(errorMessage);
 }
 
-// Initialize the client. If the keys are invalid, subsequent API calls will fail,
-// which is handled by the UI (e.g., AuthScreen error messages).
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
