@@ -8,22 +8,15 @@ let ai: GoogleGenAI | null = null;
  * Lazily initializes and returns the GoogleGenAI client instance.
  * This prevents the app from crashing on load if the API key is missing.
  */
+// FIX: Per @google/genai guidelines, the API key must be read from process.env.API_KEY.
+// This also resolves the TypeScript error "Property 'env' does not exist on type 'ImportMeta'".
+// The guideline also states to assume the key is present, so the fallback and error handling are removed.
 function getAiClient(): GoogleGenAI {
   if (ai) {
     return ai;
   }
   
-  // Use the public-prefixed environment variable for Vercel compatibility,
-  // with a placeholder fallback for local development.
-  const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'AIzaSyDE2gM_c3uqH7B7d1nhircQQZ2RIPhdx3c';
-
-  if (!API_KEY) {
-    // Log an error to the console but don't throw, to prevent a crash.
-    // API calls will fail later with an error that can be caught in the UI.
-    console.error("Gemini API key is missing. Please set NEXT_PUBLIC_API_KEY.");
-  }
-  
-  ai = new GoogleGenAI({ apiKey: API_KEY! });
+  ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
   return ai;
 }
 
