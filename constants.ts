@@ -133,7 +133,7 @@ Após análise, ZORA™ sugere melhorias criativas → e gera um **Prompt 4** j�
     bubbleBgColor: 'bg-blue-500/20',
     ringColor: 'ring-blue-500',
     suggestions: [
-        { title: 'Um gato cinza numa floresta encantada', image: 'https://images.unsplash.com/photo-1472214103451-9374bd1c798e?q=80&w=2070&auto=format&fit=crop' },
+        { title: 'Um gato cinza numa floresta encantada', image: 'https://images.unsplash.com/photo-1445262102387-5f235a767123?q=80&w=2070&auto=format&fit=crop' },
         { title: 'Descrever o ambiente de uma cidade submersa', image: 'https://images.unsplash.com/photo-1604940500428-3a5736af4544?q=80&w=1974&auto=format&fit=crop' },
         { title: 'Criar um prompt com estilo de pintura a óleo', image: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=2070&auto=format&fit=crop' }
     ],
@@ -269,9 +269,9 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
     bubbleBgColor: 'bg-green-500/20',
     ringColor: 'ring-green-400',
     suggestions: [
-        { title: 'Escrever o início de uma história de ficção científica', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop' },
-        { title: 'Criar um slogan para uma marca de café', image: 'https://images.unsplash.com/photo-1511920183353-3c2c58a05cde?q=80&w=1974&auto=format&fit=crop' },
-        { title: 'Desenvolver um conceito para um curta-metragem', image: 'https://images.unsplash.com/photo-1524956984434-6567e41346a5?q=80&w=2069&auto=format&fit=crop' }
+        { title: 'Escrever o início de uma história de ficção científica', image: 'https://images.unsplash.com/photo-1518065330224-453304da3245?q=80&w=2070&auto=format&fit=crop' },
+        { title: 'Criar um slogan para uma marca de café', image: 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=1964&auto=format&fit=crop' },
+        { title: 'Desenvolver um conceito para um curta-metragem', image: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?q=80&w=1974&auto=format&fit=crop' }
     ],
     prompt: `Você é LOKI, o roteirista criativo multifacetado. Você mergulha nos pedidos do usuário, entende sua essência e entrega ideias com estrutura, impacto visual e personalidade única. Ideal para criação de vídeos, textos, imagens, campanhas e histórias — de iniciantes a profissionais.
 
@@ -308,9 +308,9 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
     bubbleBgColor: 'bg-rose-500/20',
     ringColor: 'ring-rose-400',
     suggestions: [
-        { title: 'Um robô explorando um planeta deserto', image: 'https://images.unsplash.com/photo-1581094794329-c8112a89af10?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Cena de um café movimentado em Paris', image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Uma perseguição de carros em alta velocidade à noite', image: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop' }
+        { title: 'Um robô explorando um planeta deserto', image: 'https://images.unsplash.com/photo-1639762681057-408e52192e40?q=80&w=1935&auto=format&fit=crop' },
+        { title: 'Cena de um café movimentado em Paris', image: 'https://images.unsplash.com/photo-1555949963-ff98c872651d?q=80&w=2070&auto=format&fit=crop' },
+        { title: 'Uma perseguição de carros em alta velocidade à noite', image: 'https://images.unsplash.com/photo-1542282088-fe84a45a7da0?q=80&w=2070&auto=format&fit=crop' }
     ],
     prompt: `Você é Íris, uma assistente de prompts para inteligência artificial generativa de vídeo (VEO3), especializada na criação, interpretação e refinamento de prompts visuais avançados. Você transforma ideias em prompts detalhados e lúdicos em formato JSON, sempre com um toque artístico e explicações simples, como uma verdadeira artesã digital.
 
