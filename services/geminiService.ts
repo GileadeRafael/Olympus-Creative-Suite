@@ -1,3 +1,4 @@
+
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Assistant } from '../constants';
 import type { ChatMessage, Part } from '../types';
@@ -6,45 +7,55 @@ let ai: GoogleGenAI | null = null;
 
 /**
  * Lazily initializes and returns the GoogleGenAI client instance.
- * This prevents the app from crashing on load if the API key is missing.
  */
-// FIX: Per @google/genai guidelines, the API key must be read from process.env.API_KEY.
-// This also resolves the TypeScript error "Property 'env' does not exist on type 'ImportMeta'".
-// The guideline also states to assume the key is present, so the fallback and error handling are removed.
 function getAiClient(): GoogleGenAI {
   if (ai) {
     return ai;
   }
+
+  // FIX: Use process.env.API_KEY as required by the coding guidelines.
+  const apiKey = process.env.API_KEY;
+
+  if (!apiKey) {
+    // This error is critical. The app cannot function without the API key.
+    // Throwing an error makes the configuration issue immediately obvious during development.
+    throw new Error("Gemini API Key is missing. Please set API_KEY in your environment variables.");
+  }
   
-  ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+  ai = new GoogleGenAI({ apiKey });
   return ai;
 }
 
 
 export async function* getChatResponse(assistant: Assistant, history: ChatMessage[]) {
-    const ai = getAiClient();
-    
-    const chat: Chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-            systemInstruction: assistant.prompt,
-        },
-        history: history.slice(0, -1) // Send all but the last message
-    });
-    
-    const lastMessage = history[history.length - 1];
-    
-    if (!lastMessage || lastMessage.role !== 'user') {
-        // Cannot send an empty message or a message from the model
-        return;
-    }
+    try {
+        const ai = getAiClient();
+        
+        const chat: Chat = ai.chats.create({
+            model: 'gemini-2.5-flash',
+            config: {
+                systemInstruction: assistant.prompt,
+            },
+            history: history.slice(0, -1) // Send all but the last message
+        });
+        
+        const lastMessage = history[history.length - 1];
+        
+        if (!lastMessage || lastMessage.role !== 'user') {
+            // Cannot send an empty message or a message from the model
+            return;
+        }
 
-    const result = await chat.sendMessageStream({ message: lastMessage.parts as Part[] });
+        const result = await chat.sendMessageStream({ message: lastMessage.parts as Part[] });
 
-    for await (const chunk of result) {
-      if (chunk.text) {
-        yield chunk.text;
-      }
+        for await (const chunk of result) {
+        if (chunk.text) {
+            yield chunk.text;
+        }
+        }
+    } catch (error) {
+        console.error("Error in getChatResponse:", error);
+        yield "An error occurred while connecting to the AI service. Please check your configuration and API key.";
     }
 }
 
