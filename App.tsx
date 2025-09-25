@@ -1,4 +1,5 @@
 
+
 import React, { useState, useCallback, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Sidebar } from './components/Sidebar';
@@ -36,8 +37,17 @@ const App: React.FC = () => {
 
   // Handle Auth State Changes
   useEffect(() => {
+    // Set a timeout to prevent the app from getting stuck on the loading screen
+    // if Supabase initialization fails or takes too long.
+    const loadingTimeout = setTimeout(() => {
+      console.warn("Supabase auth initialization timed out. Proceeding...");
+      setAuthLoading(false);
+    }, 5000); // 5 seconds
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        clearTimeout(loadingTimeout); // Clear the timeout as we've received a response
+
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
@@ -68,6 +78,7 @@ const App: React.FC = () => {
     );
 
     return () => {
+      clearTimeout(loadingTimeout); // Clean up the timeout on component unmount
       subscription.unsubscribe();
     };
   }, []);
