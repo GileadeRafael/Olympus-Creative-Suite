@@ -3,7 +3,7 @@ import ReactMarkdown from 'https://esm.sh/react-markdown@9';
 import remarkGfm from 'https://esm.sh/remark-gfm@4';
 import type { ChatMessage } from '../types';
 import type { Assistant } from '../constants';
-import { UserIcon, CopyIcon, CheckIcon, SendArrowIcon, ImageIcon, XIcon } from './Icons';
+import { UserIcon, CopyIcon, CheckIcon, SendArrowIcon, ImageIcon, XIcon, DiamondIcon } from './Icons';
 import { WelcomeScreen } from './WelcomeScreen';
 
 
@@ -12,7 +12,26 @@ interface ChatViewProps {
   chatHistory: ChatMessage[];
   isLoading: boolean;
   onSendMessage: (message: string, images?: { mimeType: string, data: string }[]) => void;
+  isLocked: boolean;
 }
+
+const LockedWelcomeScreen: React.FC<{ assistant: Assistant }> = ({ assistant }) => (
+    <div className="flex flex-col items-center justify-center h-full text-center px-4">
+        <div className="relative mb-6">
+            <img src={assistant.icon} alt={assistant.name} className="w-28 h-28 rounded-full object-cover ring-4 ring-gray-200 dark:ring-ocs-med grayscale" />
+            <div className="absolute -bottom-2 -right-2 bg-ocs-purple text-white rounded-full p-2.5 shadow-lg ring-4 ring-gray-100 dark:ring-ocs-darker">
+                <DiamondIcon className="w-6 h-6" />
+            </div>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900 dark:text-white">
+            {assistant.name} está bloqueado
+        </h1>
+        <p className="mt-4 text-lg text-gray-500 dark:text-ocs-text-dim max-w-xl mx-auto">
+            Clique no ícone do assistente na barra lateral para desbloquear o acesso e começar a criar.
+        </p>
+    </div>
+);
+
 
 // Custom Code Block Component with Copy Button
 const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props }) => {
@@ -142,7 +161,7 @@ const LoadingBubble: React.FC<{ assistant: Assistant }> = ({ assistant }) => (
     </div>
 );
 
-export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLoading, onSendMessage }) => {
+export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLoading, onSendMessage, isLocked }) => {
   const [input, setInput] = useState('');
   const [imagesToSend, setImagesToSend] = useState<{ id: string; mimeType: string; data: string }[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -220,7 +239,9 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
   return (
     <div className="flex-1 flex flex-col min-h-0">
         <div className="flex-1 overflow-y-auto p-4 md:p-6 pt-8 md:pt-12">
-            {isNewChat ? (
+             {isLocked ? (
+                <LockedWelcomeScreen assistant={assistant} />
+            ) : isNewChat ? (
                 <WelcomeScreen assistant={assistant} onSendMessage={onSendMessage} />
             ) : (
                 <div className="max-w-4xl mx-auto space-y-8">
@@ -236,7 +257,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
                 </div>
             )}
         </div>
-        <div className="p-4 md:px-6 md:pb-6">
+        <div className={`p-4 md:px-6 md:pb-6 ${isLocked ? 'invisible' : ''}`}>
             <div className="max-w-3xl mx-auto">
                 <div className="flex justify-start mb-2 ml-2">
                     <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-ocs-darker border border-gray-200 dark:border-ocs-light/20 rounded-lg text-sm cursor-pointer">

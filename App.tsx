@@ -1,11 +1,15 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
 import { Header } from './components/Header';
 import { ASSISTANTS, Assistant } from './constants';
 import type { ChatMessage, ChatSession, Part } from './types';
 import { getChatResponse, getChatTitle } from './services/geminiService';
+import { AuthScreen } from './components/AuthScreen';
+import { PurchaseModal } from './components/PurchaseModal';
+import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant>(ASSISTANTS[0]);
@@ -13,6 +17,46 @@ const App: React.FC = () => {
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+
+  // --- Authentication and Purchase State ---
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [unlockedAssistants, setUnlockedAssistants] = useState<Set<string>>(new Set()); // All assistants locked by default
+  const [purchaseModalState, setPurchaseModalState] = useState<{ isOpen: boolean; assistant: Assistant | null }>({ isOpen: false, assistant: null });
+
+  // Handle Auth State Changes
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+
+        if (currentUser) {
+            // Fetch unlocked assistants when user logs in
+            const { data, error } = await supabase
+                .from('unlocked_assistants')
+                .select('assistant_id')
+                .eq('user_id', currentUser.id);
+            
+            if (error) {
+                console.error('Error fetching unlocked assistants:', error);
+            } else {
+                const unlockedIds = new Set(data.map(item => item.assistant_id));
+                setUnlockedAssistants(unlockedIds);
+            }
+        } else {
+            // Reset when user logs out
+            setUnlockedAssistants(new Set());
+        }
+        setAuthLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -56,6 +100,11 @@ const App: React.FC = () => {
   
   // Effect to handle initial chat creation or selection
   useEffect(() => {
+    if (!user) return; // Don't create chats if not logged in
+
+    const isSelectedAssistantUnlocked = unlockedAssistants.has(selectedAssistant.id);
+    if (!isSelectedAssistantUnlocked) return; // Don't create chat for locked assistant
+
     const sessions = chatHistories[selectedAssistant.id] || [];
     if (sessions.length === 0) {
       handleNewChat();
@@ -63,7 +112,7 @@ const App: React.FC = () => {
       setCurrentSessionId(sessions[0].id);
     }
      // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedAssistant.id, chatHistories]);
+  }, [selectedAssistant.id, chatHistories, user, unlockedAssistants]);
 
 
   const handleSendMessage = useCallback(async (message: string, images?: { mimeType: string; data: string }[]) => {
@@ -161,6 +210,11 @@ const App: React.FC = () => {
   }, [selectedAssistant, currentSessionId, currentChatHistory, currentSession?.title, updateChatTitle]);
     
   const handleSelectAssistant = (assistant: Assistant) => {
+      if (!unlockedAssistants.has(assistant.id)) {
+          setPurchaseModalState({ isOpen: true, assistant });
+          return;
+      }
+
       setSelectedAssistant(assistant);
       const sessions = chatHistories[assistant.id] || [];
       if(sessions.length > 0){
@@ -169,31 +223,48 @@ const App: React.FC = () => {
           setCurrentSessionId(null); // will trigger new chat creation in useEffect
       }
   };
-
+  
+  if (authLoading) {
+      // You can return a loading spinner here
+      return <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">Loading...</div>;
+  }
+  
+  if (!user) {
+      return <AuthScreen />;
+  }
 
   return (
-    <div className="flex h-screen w-full font-sans text-ocs-text bg-gray-100 dark:bg-dark-gradient">
-      <Sidebar
-        assistants={ASSISTANTS}
-        selectedAssistant={selectedAssistant}
-        onSelectAssistant={handleSelectAssistant}
-        theme={theme}
-        setTheme={setTheme}
-        onNewChat={handleNewChat}
-      />
-      <div className="flex-1 flex flex-col relative">
-        <Header />
-        <main className="flex-1 flex flex-col min-h-0">
-            <ChatView
-                key={currentSessionId} // Re-mount component on session change
-                assistant={selectedAssistant}
-                chatHistory={currentChatHistory}
-                isLoading={isLoading}
-                onSendMessage={handleSendMessage}
-            />
-        </main>
+    <>
+      <div className="flex h-screen w-full font-sans text-ocs-text bg-gray-100 dark:bg-dark-gradient">
+        <Sidebar
+          assistants={ASSISTANTS}
+          selectedAssistant={selectedAssistant}
+          onSelectAssistant={handleSelectAssistant}
+          theme={theme}
+          setTheme={setTheme}
+          onNewChat={handleNewChat}
+          unlockedAssistants={unlockedAssistants}
+        />
+        <div className="flex-1 flex flex-col relative">
+          <Header user={user} />
+          <main className="flex-1 flex flex-col min-h-0">
+              <ChatView
+                  key={currentSessionId} // Re-mount component on session change
+                  assistant={selectedAssistant}
+                  chatHistory={currentChatHistory}
+                  isLoading={isLoading}
+                  onSendMessage={handleSendMessage}
+                  isLocked={!unlockedAssistants.has(selectedAssistant.id)}
+              />
+          </main>
+        </div>
       </div>
-    </div>
+      <PurchaseModal
+        isOpen={purchaseModalState.isOpen}
+        assistant={purchaseModalState.assistant}
+        onClose={() => setPurchaseModalState({ isOpen: false, assistant: null })}
+      />
+    </>
   );
 };
 

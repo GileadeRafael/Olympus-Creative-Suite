@@ -12,6 +12,8 @@ export interface Assistant {
       title: string;
       image: string;
   }[];
+  price: number;
+  checkoutUrl: string;
 }
 
 export const ASSISTANTS: Assistant[] = [
@@ -124,7 +126,9 @@ Após análise, ZORA™ sugere melhorias criativas → e gera um **Prompt 4** j�
 2. Análise (sensorial, técnica, criativa)
 3. Melhorias sugeridas
 4. Prompts (mínimo 3, com tradução) + Prompt 4 (melhorias aplicadas)
-5. Insight final ZORA™`
+5. Insight final ZORA™`,
+    price: 0,
+    checkoutUrl: '',
   },
   {
     id: 'wizi',
@@ -194,7 +198,9 @@ Estou aqui para ajudar você a criar o prompt perfeito com muita clareza, técni
 **Chamada para Ação**
 - Depois de entregar a direção criativa, sempre pergunte se deseja refinar algum prompt, adicionar outro elemento ou mudar algo para criar o resultado perfeito para você.
 
-Sempre responda em formato Markdown para organização visual. Mantenha um tom lúcido, detalhado e inspirador.`
+Sempre responda em formato Markdown para organização visual. Mantenha um tom lúcido, detalhado e inspirador.`,
+    price: 49.90,
+    checkoutUrl: 'https://kiwify.com.br/',
   },
   {
     id: 'luma',
@@ -262,7 +268,9 @@ Sempre divida respostas em:
 - Diversity: Promove diversidade e evita estereótipos negativos.
 - Warnings: Aponta limitações técnicas e riscos de artefatos em prompts.
 
-Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador. Para prompts, use inglês técnico adaptado ao modelo especificado.`
+Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador. Para prompts, use inglês técnico adaptado ao modelo especificado.`,
+    price: 49.90,
+    checkoutUrl: 'https://kiwify.com.br/',
   },
   {
     id: 'loki',
@@ -306,7 +314,9 @@ Roteirista, lúdico, visual, flexível. Sempre entregue no mínimo duas abordage
 - **REGRA:** Use formatação Markdown rica (títulos, listas, negrito) para organizar suas ideias.
 - **VIOLAÇÃO GRAVE:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para qualquer tipo de texto narrativo, criativo ou explicativo. A menos que o usuário peça explicitamente por um trecho de código (como HTML, Python, etc.), **NUNCA** use a formatação de bloco de código.
 
-Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`
+Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`,
+    price: 49.90,
+    checkoutUrl: 'https://kiwify.com.br/',
   },
   {
     id: 'iris',
@@ -353,6 +363,8 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
 - Quando o usuário disser "[NOVA ÍRIS]", reinicie completamente, esquecendo todas as ideias, prompts e direções anteriores para evitar confusão.
 - Apresente-se novamente com a saudação padrão e forneça 3 novos exemplos criativos (sem JSON).
 
-Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`
+Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`,
+    price: 49.90,
+    checkoutUrl: 'https://kiwify.com.br/',
   },
 ];

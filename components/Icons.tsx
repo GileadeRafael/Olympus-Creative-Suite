@@ -54,3 +54,12 @@ export const XIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
   </svg>
 );
+
+export const DiamondIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg {...props} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.0001 1.60352L17.293 6.89641L12.0001 12.1893L6.70718 6.89641L12.0001 1.60352Z" />
+    <path d="M5.29289 8.31066L12 15.0178L18.7071 8.31066L12 22.0178L5.29289 8.31066Z" />
+    <path d="M17.293 6.89641L12.0001 12.1893L18.7071 8.31066L17.293 6.89641Z" />
+    <path d="M6.70718 6.89641L12.0001 12.1893L5.29289 8.31066L6.70718 6.89641Z" />
+  </svg>
+);

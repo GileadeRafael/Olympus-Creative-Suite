@@ -1,7 +1,7 @@
 
 import React from 'react';
 import type { Assistant } from '../constants';
-import { SunIcon, MoonIcon } from './Icons';
+import { SunIcon, MoonIcon, DiamondIcon } from './Icons';
 
 interface SidebarProps {
   assistants: Assistant[];
@@ -10,28 +10,35 @@ interface SidebarProps {
   onNewChat: () => void;
   theme: 'dark' | 'light';
   setTheme: (theme: 'dark' | 'light') => void;
+  unlockedAssistants: Set<string>;
 }
 
 const NavItem: React.FC<{
   assistant: Assistant;
   isActive: boolean;
+  isLocked: boolean;
   onClick: () => void;
-}> = ({ assistant, isActive, onClick }) => (
+}> = ({ assistant, isActive, isLocked, onClick }) => (
     <div className="relative w-full group flex justify-center">
-        <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 ${isActive ? assistant.iconBgColor : 'bg-transparent'} rounded-r-lg transition-all duration-300`} />
+        <div className={`absolute left-0 top-1/2 -translate-y-1/2 h-6 w-1 ${isActive && !isLocked ? assistant.iconBgColor : 'bg-transparent'} rounded-r-lg transition-all duration-300`} />
         <button
             onClick={onClick}
-            className={`flex items-center justify-center w-12 h-12 rounded-full overflow-hidden transition-all duration-300 ${
-            isActive
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 relative ${
+            isActive && !isLocked
                 ? `scale-110 ring-2 ring-offset-2 ring-offset-gray-100 dark:ring-offset-ocs-dark ${assistant.ringColor}`
                 : 'bg-gray-200 dark:bg-ocs-darker'
-            } hover:rounded-xl`}
+            } ${isLocked ? 'grayscale opacity-60' : 'hover:rounded-xl'}`}
             aria-label={assistant.name}
         >
-            <img src={assistant.icon} alt={assistant.name} className="w-full h-full object-cover" />
+            <img src={assistant.icon} alt={assistant.name} className="w-full h-full object-cover rounded-full" />
+             {isLocked && (
+                <div className="absolute -top-1 -right-1 bg-ocs-purple text-white rounded-full p-0.5 shadow-md">
+                    <DiamondIcon className="w-3 h-3" />
+                </div>
+            )}
         </button>
-        <span className="absolute left-16 p-2 px-3 text-sm font-semibold text-white bg-ocs-dark rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap">
-            {assistant.name}
+        <span className="absolute left-16 p-2 px-3 text-sm font-semibold text-white bg-ocs-dark rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none whitespace-nowrap z-20">
+            {assistant.name} {isLocked ? '(Bloqueado)' : ''}
         </span>
     </div>
 );
@@ -42,7 +49,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectAssistant,
   onNewChat,
   theme,
-  setTheme
+  setTheme,
+  unlockedAssistants,
 }) => {
   return (
     <div className="w-20 bg-gray-100 dark:bg-ocs-dark/50 p-3 flex flex-col items-center justify-between border-r border-gray-200 dark:border-ocs-light/10">
@@ -60,6 +68,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             key={assistant.id}
             assistant={assistant}
             isActive={selectedAssistant.id === assistant.id}
+            isLocked={!unlockedAssistants.has(assistant.id)}
             onClick={() => onSelectAssistant(assistant)}
           />
         ))}
