@@ -1,4 +1,3 @@
-
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Assistant } from '../constants';
 import type { ChatMessage, Part } from '../types';
@@ -14,7 +13,8 @@ function getAiClient(): GoogleGenAI {
     return ai;
   }
   
-  const API_KEY = process.env.API_KEY;
+  // Use the public-prefixed environment variable for Vercel compatibility
+  const API_KEY = process.env.NEXT_PUBLIC_API_KEY;
 
   if (!API_KEY) {
     console.error("Gemini API key is not set in environment variables.");
