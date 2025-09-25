@@ -3,17 +3,31 @@ import { GoogleGenAI, Chat } from "@google/genai";
 import type { Assistant } from '../constants';
 import type { ChatMessage, Part } from '../types';
 
-// NOTE: This is a placeholder. In a real application, the API key would be
-// securely managed and not hardcoded or exposed client-side.
-const API_KEY = process.env.API_KEY;
+let ai: GoogleGenAI | null = null;
 
-if (!API_KEY) {
-  console.warn("API_KEY is not set. Please set the environment variable.");
+/**
+ * Lazily initializes and returns the GoogleGenAI client instance.
+ * This prevents the app from crashing on load if the API key is missing.
+ */
+function getAiClient(): GoogleGenAI {
+  if (ai) {
+    return ai;
+  }
+  
+  const API_KEY = process.env.API_KEY;
+
+  if (!API_KEY) {
+    console.error("Gemini API key is not set in environment variables.");
+    throw new Error("Gemini API key is missing. Cannot connect to the AI service.");
+  }
+  
+  ai = new GoogleGenAI({ apiKey: API_KEY });
+  return ai;
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY });
 
 export async function* getChatResponse(assistant: Assistant, history: ChatMessage[]) {
+    const ai = getAiClient();
     
     const chat: Chat = ai.chats.create({
         model: 'gemini-2.5-flash',
@@ -56,6 +70,7 @@ export async function getChatTitle(history: ChatMessage[]): Promise<string> {
         .join('\n');
 
     try {
+        const ai = getAiClient();
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: `Based on the following conversation, create a short, descriptive title (maximum 5 words). Do not use quotes.\n\nConversation:\n${conversationForTitle}`,

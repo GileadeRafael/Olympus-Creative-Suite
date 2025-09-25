@@ -12,11 +12,6 @@ import { PurchaseModal } from './components/PurchaseModal';
 import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
-  // This check is no longer needed as supabase keys are hardcoded.
-  // if (!supabase) {
-  //   return <MissingSecretsScreen />;
-  // }
-
   const [selectedAssistant, setSelectedAssistant] = useState<Assistant>(ASSISTANTS[0]);
   const [chatHistories, setChatHistories] = useState<Record<string, ChatSession[]>>({});
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
@@ -26,7 +21,7 @@ const App: React.FC = () => {
   // --- Authentication and Purchase State ---
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [unlockedAssistants, setUnlockedAssistants] = useState<Set<string>>(new Set()); // All assistants locked by default
+  const [unlockedAssistants, setUnlockedAssistants] = useState<Set<string>>(new Set());
   const [purchaseModalState, setPurchaseModalState] = useState<{ isOpen: boolean; assistant: Assistant | null }>({ isOpen: false, assistant: null });
 
   // Handle Auth State Changes
@@ -41,8 +36,8 @@ const App: React.FC = () => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        if (currentUser) {
-            // Fetch unlocked assistants when user logs in
+        if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && currentUser)) {
+            // Fetch unlocked assistants when user logs in or session is restored
             const { data, error } = await supabase
                 .from('unlocked_assistants')
                 .select('assistant_id')
@@ -50,15 +45,20 @@ const App: React.FC = () => {
             
             if (error) {
                 console.error('Error fetching unlocked assistants:', error);
+                setUnlockedAssistants(new Set()); // Reset on error
             } else {
                 const unlockedIds = new Set(data.map(item => item.assistant_id));
                 setUnlockedAssistants(unlockedIds);
             }
-        } else {
+        } else if (event === 'SIGNED_OUT') {
             // Reset when user logs out
             setUnlockedAssistants(new Set());
         }
-        setAuthLoading(false);
+        
+        // Only stop loading after the initial session has been processed.
+        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+            setAuthLoading(false);
+        }
       }
     );
 
@@ -83,6 +83,7 @@ const App: React.FC = () => {
       setChatHistories(prev => {
           const newHistories = { ...prev };
           const assistantHistory = newHistories[selectedAssistant.id];
+          if (!assistantHistory) return newHistories;
           const sessionIndex = assistantHistory.findIndex(s => s.id === sessionId);
           if (sessionIndex !== -1) {
               assistantHistory[sessionIndex].title = newTitle;
@@ -235,14 +236,21 @@ const App: React.FC = () => {
   };
   
   const handlePurchaseSuccess = (purchasedAssistant: Assistant) => {
+    // 1. Update the local state to reflect the unlock
     setUnlockedAssistants(prev => new Set(prev).add(purchasedAssistant.id));
+    // 2. Close the modal
     setPurchaseModalState({ isOpen: false, assistant: null });
-    // Switch to the newly unlocked assistant
-    handleSelectAssistant(purchasedAssistant);
+    // 3. Directly select the assistant, bypassing the lock check
+    setSelectedAssistant(purchasedAssistant);
+    const sessions = chatHistories[purchasedAssistant.id] || [];
+    if (sessions.length > 0) {
+        setCurrentSessionId(sessions[0].id);
+    } else {
+        setCurrentSessionId(null); // will trigger new chat creation in useEffect
+    }
   };
   
   if (authLoading) {
-      // You can return a loading spinner here
       return <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">Loading...</div>;
   }
   
