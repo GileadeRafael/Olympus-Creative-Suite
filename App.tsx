@@ -36,11 +36,6 @@ const App: React.FC = () => {
 
   // Handle Auth State Changes
   useEffect(() => {
-    if (!supabase) {
-      setAuthLoading(false);
-      return;
-    };
-    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null;
