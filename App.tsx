@@ -22,7 +22,17 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [unlockedAssistants, setUnlockedAssistants] = useState<Set<string>>(new Set());
-  const [purchaseModalState, setPurchaseModalState] = useState<{ isOpen: boolean; assistant: Assistant | null }>({ isOpen: false, assistant: null });
+  const [purchaseModalState, setPurchaseModalState] = useState<{
+    isOpen: boolean;
+    assistant: Assistant | null;
+    isLoading: boolean;
+    error: string | null;
+  }>({
+    isOpen: false,
+    assistant: null,
+    isLoading: false,
+    error: null,
+  });
 
   // Handle Auth State Changes
   useEffect(() => {
@@ -222,7 +232,7 @@ const App: React.FC = () => {
     
   const handleSelectAssistant = (assistant: Assistant) => {
       if (!unlockedAssistants.has(assistant.id)) {
-          setPurchaseModalState({ isOpen: true, assistant });
+          setPurchaseModalState({ isOpen: true, assistant, isLoading: false, error: null });
           return;
       }
 
@@ -238,8 +248,8 @@ const App: React.FC = () => {
   const handlePurchaseSuccess = (purchasedAssistant: Assistant) => {
     // 1. Update the local state to reflect the unlock
     setUnlockedAssistants(prev => new Set(prev).add(purchasedAssistant.id));
-    // 2. Close the modal
-    setPurchaseModalState({ isOpen: false, assistant: null });
+    // 2. Close the modal and reset state
+    setPurchaseModalState({ isOpen: false, assistant: null, isLoading: false, error: null });
     // 3. Directly select the assistant, bypassing the lock check
     setSelectedAssistant(purchasedAssistant);
     const sessions = chatHistories[purchasedAssistant.id] || [];
@@ -248,6 +258,45 @@ const App: React.FC = () => {
     } else {
         setCurrentSessionId(null); // will trigger new chat creation in useEffect
     }
+  };
+
+  const handleConfirmPurchase = async (assistantToPurchase: Assistant) => {
+    if (!user) {
+        setPurchaseModalState(prev => ({ ...prev, error: "You must be logged in to make a purchase." }));
+        return;
+    }
+
+    setPurchaseModalState(prev => ({ ...prev, isLoading: true, error: null }));
+
+    try {
+        const { error: insertError } = await supabase
+            .from('unlocked_assistants')
+            .insert({
+                user_id: user.id,
+                assistant_id: assistantToPurchase.id,
+            });
+
+        if (insertError) {
+            // Handle case where user might already own the assistant (e.g., race condition)
+            if (insertError.code === '23505') { // Postgres unique_violation
+                 console.warn('User already owns this assistant. Unlocking.');
+                 handlePurchaseSuccess(assistantToPurchase);
+                 return;
+            }
+            throw insertError;
+        }
+
+        handlePurchaseSuccess(assistantToPurchase);
+
+    } catch (err: any) {
+        console.error("Purchase error:", err);
+        const errorMessage = err.message || "An error occurred during the purchase. Please try again.";
+        setPurchaseModalState(prev => ({ ...prev, isLoading: false, error: errorMessage }));
+    }
+  };
+  
+  const handleClosePurchaseModal = () => {
+    setPurchaseModalState({ isOpen: false, assistant: null, isLoading: false, error: null });
   };
   
   if (authLoading) {
@@ -287,9 +336,10 @@ const App: React.FC = () => {
       <PurchaseModal
         isOpen={purchaseModalState.isOpen}
         assistant={purchaseModalState.assistant}
-        onClose={() => setPurchaseModalState({ isOpen: false, assistant: null })}
-        onPurchaseSuccess={handlePurchaseSuccess}
-        user={user}
+        onClose={handleClosePurchaseModal}
+        onConfirmPurchase={handleConfirmPurchase}
+        isLoading={purchaseModalState.isLoading}
+        error={purchaseModalState.error}
       />
     </>
   );

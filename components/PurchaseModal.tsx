@@ -1,54 +1,22 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import type { Assistant } from '../constants';
 import { XIcon, DiamondIcon } from './Icons';
-import { supabase } from '../services/supabaseClient';
-import type { User } from '@supabase/supabase-js';
 
 interface PurchaseModalProps {
   isOpen: boolean;
   assistant: Assistant | null;
   onClose: () => void;
-  onPurchaseSuccess: (assistant: Assistant) => void;
-  user: User | null;
+  onConfirmPurchase: (assistant: Assistant) => void;
+  isLoading: boolean;
+  error: string | null;
 }
 
-export const PurchaseModal: React.FC<PurchaseModalProps> = ({ isOpen, assistant, onClose, onPurchaseSuccess, user }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
+export const PurchaseModal: React.FC<PurchaseModalProps> = ({ isOpen, assistant, onClose, onConfirmPurchase, isLoading, error }) => {
   if (!isOpen || !assistant) return null;
   
-  const handlePurchase = async () => {
-    if (!user) {
-        setError("You must be logged in to make a purchase.");
-        return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-        const { error: insertError } = await supabase
-            .from('unlocked_assistants')
-            .insert({
-                user_id: user.id,
-                assistant_id: assistant.id,
-            });
-
-        if (insertError) {
-            throw insertError;
-        }
-
-        // On successful insert, call the callback
-        onPurchaseSuccess(assistant);
-
-    } catch (err: any) {
-        console.error("Purchase error:", err);
-        setError(err.message || "An error occurred during the purchase. Please try again.");
-    } finally {
-        setIsLoading(false);
-    }
+  const handleConfirm = () => {
+      onConfirmPurchase(assistant);
   };
 
   return (
@@ -93,7 +61,7 @@ export const PurchaseModal: React.FC<PurchaseModalProps> = ({ isOpen, assistant,
              {error && <p className="text-sm text-red-400 text-center mt-4">{error}</p>}
             
             <button
-              onClick={handlePurchase}
+              onClick={handleConfirm}
               disabled={isLoading}
               className="w-full mt-6 bg-ocs-blue text-white font-bold py-3 rounded-lg hover:bg-blue-600 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-ocs-darker focus:ring-ocs-blue disabled:bg-ocs-light disabled:cursor-not-allowed"
             >
