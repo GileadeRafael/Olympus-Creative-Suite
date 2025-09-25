@@ -1,7 +1,9 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+// WARNING: Hardcoding secrets is not recommended in production.
+// This is a temporary measure because the user couldn't set environment variables.
+const supabaseUrl = "https://nzmfromwgnbjmbhrifeg.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bWZyb213Z25iam1iaHJpZmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MzI1ODAsImV4cCI6MjA3NDQwODU4MH0.ba_n61ffKId6VLJ1Z6gWns3vPerJGYjpG-ZMDeDuBXA";
 
 function initializeSupabase(): SupabaseClient | null {
   if (supabaseUrl && supabaseAnonKey) {
@@ -12,7 +14,7 @@ function initializeSupabase(): SupabaseClient | null {
       return null;
     }
   }
-  console.warn("Supabase URL or Anon Key is not set in environment variables. Please set SUPABASE_URL and SUPABASE_ANON_KEY in your project's Secrets.");
+  console.warn("Supabase URL or Anon Key is not set.");
   return null;
 }
 
