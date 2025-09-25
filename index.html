@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Olympus Creative Suite</title>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Bricolage Grotesque"', 'sans-serif'],
+            },
+            backgroundImage: {
+              'dark-gradient': "radial-gradient(circle at top, hsl(0, 0%, 12%), hsl(0, 0%, 4%))",
+            },
+            colors: {
+              'ocs-dark': '#0D0F12',
+              'ocs-darker': '#171A1F',
+              'ocs-med': '#21252B',
+              'ocs-light': '#323740',
+              'ocs-lighter': '#4A505A',
+              'ocs-text': '#C5C9D1',
+              'ocs-text-dim': '#8F949E',
+              'ocs-blue': '#2E67F8',
+              'ocs-purple': '#8E55EA',
+              'ocs-green': '#34A853',
+            },
+            typography: (theme) => ({
+              DEFAULT: {
+                css: {
+                  '--tw-prose-body': theme('colors.gray.700'),
+                  '--tw-prose-headings': theme('colors.gray.900'),
+                  '--tw-prose-lead': theme('colors.gray.600'),
+                  '--tw-prose-links': theme('colors.ocs-blue'),
+                  '--tw-prose-bold': theme('colors.gray.900'),
+                  '--tw-prose-counters': theme('colors.gray.500'),
+                  '--tw-prose-bullets': theme('colors.gray.300'),
+                  '--tw-prose-hr': theme('colors.gray.200'),
+                  '--tw-prose-quotes': theme('colors.gray.900'),
+                  '--tw-prose-quote-borders': theme('colors.gray.200'),
+                  '--tw-prose-captions': theme('colors.gray.500'),
+                  '--tw-prose-code': theme('colors.gray.900'),
+                  '--tw-prose-pre-code': theme('colors.gray.200'),
+                  '--tw-prose-pre-bg': theme('colors.gray.800'),
+                  '--tw-prose-th-borders': theme('colors.gray.300'),
+                  '--tw-prose-td-borders': theme('colors.gray.200'),
+                  'p': { marginTop: '1.25em', marginBottom: '1.25em' },
+                  'h1, h2, h3, h4, h5, h6': { marginTop: '1.6em', marginBottom: '0.6em' },
+                }
+              },
+              invert: {
+                css: {
+                  '--tw-prose-body': theme('colors.ocs-text'),
+                  '--tw-prose-headings': theme('colors.white'),
+                  '--tw-prose-lead': theme('colors.ocs-text-dim'),
+                  '--tw-prose-links': theme('colors.ocs-blue'),
+                  '--tw-prose-bold': theme('colors.white'),
+                  '--tw-prose-counters': theme('colors.ocs-text-dim'),
+                  '--tw-prose-bullets': theme('colors.ocs-light'),
+                  '--tw-prose-hr': theme('colors.ocs-light/20'),
+                  '--tw-prose-quotes': theme('colors.ocs-text'),
+                  '--tw-prose-quote-borders': theme('colors.ocs-light'),
+                  '--tw-prose-captions': theme('colors.ocs-text-dim'),
+                  '--tw-prose-code': theme('colors.white'),
+                  '--tw-prose-pre-code': theme('colors.ocs-text'),
+                  '--tw-prose-pre-bg': theme('colors.ocs-dark'),
+                  '--tw-prose-th-borders': theme('colors.ocs-light'),
+                  '--tw-prose-td-borders': theme('colors.ocs-light/50'),
+                },
+              },
+            }),
+          },
+        },
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-100 dark:bg-dark-gradient">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
