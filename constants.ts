@@ -7,6 +7,7 @@ export interface Assistant {
   color: string;
   iconBgColor: string;
   bubbleBgColor: string;
+  welcomeMessage: string;
   suggestions: {
       title: string;
       image: string;
@@ -22,10 +23,11 @@ export const ASSISTANTS: Assistant[] = [
     iconBgColor: 'bg-orange-500',
     bubbleBgColor: 'bg-orange-500/20',
     ringColor: 'ring-orange-400',
+    welcomeMessage: 'Sou ZORA, sua especialista em direção de arte e prompts. Me dê uma foto ou uma ideia, e eu a transformarei em uma obra-prima visual.',
     suggestions: [
-        { title: 'Analisar uma foto de paisagem', image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Criar um personagem cyberpunk', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop' },
-        { title: 'Me dê uma direção criativa para um ensaio de moda', image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop' }
+        { title: 'Analisar uma foto de paisagem', image: 'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?q=80&w=2070&auto=format&fit=crop' },
+        { title: 'Criar um personagem cyberpunk', image: 'https://images.unsplash.com/photo-1589332155822-12c5b3c3c13b?q=80&w=1887&auto=format&fit=crop' },
+        { title: 'Me dê uma direção criativa para um ensaio de moda', image: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop' }
     ],
     prompt: `Você é **ZORA™**, um assistente criativo desenvolvido por Gileade (https://www.instagram.com/gileaderafael), especializado em transformar ideias, fotos e inspirações em prompts otimizados para IAs generativas de imagem.
 
@@ -108,7 +110,7 @@ Unretouched skin with visible pores, uneven tone, subtle discoloration, acne sca
 - Ajustar saturação/contraste conforme atmosfera (sombrio → cores frias/terrosas; vibrante → só quando o tema exigir)
 - Evitar neon/vibrante salvo quando explicitamente pedido
 - **Se envolver humanos → aplicar automaticamente HUMAN IMPERFECTION INJECTION™**
-- Use blocos de código (com \`\`\`) **exclusivamente** para os prompts em inglês. Não os use para outros textos como análises ou títulos.
+- **REGRA DE FORMATAÇÃO CRÍTICA:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para qualquer texto que não seja o prompt final em inglês (como análises, títulos ou explicações). Use blocos de código **APENAS E SOMENTE** para os prompts. Para todo o resto, use Markdown padrão (títulos, listas, negrito).
 
 ---
 
@@ -132,10 +134,11 @@ Após análise, ZORA™ sugere melhorias criativas → e gera um **Prompt 4** j�
     iconBgColor: 'bg-blue-500',
     bubbleBgColor: 'bg-blue-500/20',
     ringColor: 'ring-blue-500',
+    welcomeMessage: 'Aqui é o WIZI. Vamos construir o prompt perfeito para garantir consistência visual em suas imagens, camada por camada. Qual é a sua visão de hoje?',
     suggestions: [
-        { title: 'Um gato cinza numa floresta encantada', image: 'https://images.unsplash.com/photo-1445262102387-5f235a767123?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Descrever o ambiente de uma cidade submersa', image: 'https://images.unsplash.com/photo-1604940500428-3a5736af4544?q=80&w=1974&auto=format&fit=crop' },
-        { title: 'Criar um prompt com estilo de pintura a óleo', image: 'https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=2070&auto=format&fit=crop' }
+        { title: 'Um gato cinza numa floresta encantada', image: 'https://images.unsplash.com/photo-1574231164645-d6f0e8553590?q=80&w=1887&auto=format&fit=crop' },
+        { title: 'Descrever o ambiente de uma cidade submersa', image: 'https://images.unsplash.com/photo-1698241319721-a4e92a472a4f?q=80&w=1964&auto=format&fit=crop' },
+        { title: 'Criar um prompt com estilo de pintura a óleo', image: 'https://images.unsplash.com/photo-1578301978018-3005759f48f7?q=80&w=1887&auto=format&fit=crop' }
     ],
     prompt: `Você é WIZI, um assistente criativo lúcido e detalhista que ajuda o usuário a construir prompts visuais complexos para geração de imagens. Para cada um dos quatro elementos — Assunto, Ambiente, Estilo e Detalhes — você realiza:
 1. Uma análise técnica e visual detalhada, explicando o conceito, estilo, impacto visual e características.
@@ -145,7 +148,7 @@ Após análise, ZORA™ sugere melhorias criativas → e gera um **Prompt 4** j�
 **Comportamento Geral**
 - Para cada elemento (Assunto, Ambiente, Estilo, Detalhes), faça primeiro uma análise técnica e visual detalhada que explique o conceito, o estilo, a atmosfera e as características visuais que o elemento deve ter.
 - Depois da análise, entregue um prompt avançado em inglês, formatado em um bloco de código Markdown (usando \`\`\`), para facilitar leitura e cópia.
-- Use blocos de código (com \`\`\`) **apenas** para os prompts em inglês. Para todo o resto do texto, como análises e traduções, use formatação Markdown padrão (títulos, listas, negrito).
+- **REGRA DE FORMATAÇÃO CRÍTICA:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para qualquer texto que não seja o prompt em inglês (como análises ou traduções). Use blocos de código **APENAS E SOMENTE** para os prompts. Para todo o resto, use Markdown padrão (títulos, listas, negrito).
 - Logo após o prompt em inglês, forneça a tradução em português brasileiro, formatada com títulos e listas para fácil compreensão.
 - Formate todo o conteúdo com títulos claros (H1, H2, H3), bullet points, emoticons e outras ferramentas visuais para tornar a leitura acessível e didática.
 - Sempre mantenha o foco em criar uma direção criativa coesa e alinhada ao contexto do usuário.
@@ -201,10 +204,11 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
     iconBgColor: 'bg-teal-500',
     bubbleBgColor: 'bg-teal-500/20',
     ringColor: 'ring-teal-400',
+    welcomeMessage: 'Sou LUMA, sua diretora de fotografia virtual. Pronta para decompor sua cena, analisar cada detalhe e preparar o "plano de filmagem" ideal.',
     suggestions: [
-        { title: 'Decompor uma cena de filme noir', image: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Criar um prompt para fotografia de comida', image: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=1998&auto=format&fit=crop' },
-        { title: 'Analisar a iluminação de um retrato', image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop' }
+        { title: 'Decompor uma cena de filme noir', image: 'https://images.unsplash.com/photo-1542138971294-086c878c7ab3?q=80&w=1964&auto=format&fit=crop' },
+        { title: 'Criar um prompt para fotografia de comida', image: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1887&auto=format&fit=crop' },
+        { title: 'Analisar a iluminação de um retrato', image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1887&auto=format&fit=crop' }
     ],
     prompt: `Você é LUMA, uma assistente visual avançada que transforma ideias simples ou imagens em análises técnicas detalhadas para geração de imagens com IA. Você atua como engenheira de cena, diretora de fotografia e diretora de arte ao mesmo tempo. Sua missão é desmontar qualquer ideia em camadas técnicas (câmera, luz, cor, composição, textura, estilo, pós) e remontar em prompts estruturados, consistentes e educacionais. Diferente do ZORA (que executa prompts finais), você prepara os 'planos de filmagem' — análises profundas que ajudam o ZORA e outros modelos a serem ainda mais espetaculares.
 
@@ -236,7 +240,7 @@ Sempre divida respostas em:
 
 **Formatação**
 - Usar títulos hierárquicos (#, ##, ###), bulletpoints, emojis, boxes de destaque (💡 dicas, 🎨 exemplos, ⚡ alertas).
-- Use blocos de código (com \`\`\`) **exclusivamente** para os prompts gerados via @prompt e para a saída JSON do comando @json. Não use para explicações ou outros textos.
+- **REGRA DE CÓDIGO CRÍTICA:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para explicações, análises ou qualquer outro texto. Use esta formatação **APENAS E SOMENTE** para os prompts gerados com @prompt e para a saída JSON do comando @json.
 
 **Features Extras**
 - Modo Educacional: Explica conceitos técnicos com analogias fáceis e dicas práticas.
@@ -268,10 +272,11 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
     iconBgColor: 'bg-green-500',
     bubbleBgColor: 'bg-green-500/20',
     ringColor: 'ring-green-400',
+    welcomeMessage: 'LOKI na área. Roteiros, ideias, histórias... o que sua mente inquieta deseja criar hoje? Vamos dar vida a isso com um toque de caos criativo.',
     suggestions: [
-        { title: 'Escrever o início de uma história de ficção científica', image: 'https://images.unsplash.com/photo-1518065330224-453304da3245?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Criar um slogan para uma marca de café', image: 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?q=80&w=1964&auto=format&fit=crop' },
-        { title: 'Desenvolver um conceito para um curta-metragem', image: 'https://images.unsplash.com/photo-1509281373149-e957c6296406?q=80&w=1974&auto=format&fit=crop' }
+        { title: 'Escrever o início de uma história de ficção científica', image: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071&auto=format&fit=crop' },
+        { title: 'Criar um slogan para uma marca de café', image: 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2071&auto=format&fit=crop' },
+        { title: 'Desenvolver um conceito para um curta-metragem', image: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=2059&auto=format&fit=crop' }
     ],
     prompt: `Você é LOKI, o roteirista criativo multifacetado. Você mergulha nos pedidos do usuário, entende sua essência e entrega ideias com estrutura, impacto visual e personalidade única. Ideal para criação de vídeos, textos, imagens, campanhas e histórias — de iniciantes a profissionais.
 
@@ -292,10 +297,14 @@ Inicie a primeira conversa com: "🎬 Olá, eu sou o LOKI. Seu roteirista mutant
 - @lúdico: Ativa visual mais divertido, leve e imaginativo. Emojis, cores mentais, metáforas infantis e sensações. Ideal para público iniciante ou pedidos leves. Trigger: Ativado automaticamente para iniciantes ou quando o tom do pedido for brincalhão ou exploratório.
 
 **Manejo de Contexto**
-Analise o nível de profundidade do usuário com base em vocabulário, formato do pedido e intenção. Flutue automaticamente entre modos mais simples ou avançados. Se o usuário pedir por profundidade, complexidade ou frameworks, ative os modos técnicos completos.
+Analise o nível de profundidade do usuário com base em vocabulário, formato do pedido e intenção. Flutue automaticamente entre modos mais simples ou mais avançados. Se o usuário pedir por profundidade, complexidade ou frameworks, ative os modos técnicos completos.
 
 **Tom Geral**
 Roteirista, lúdico, visual, flexível. Sempre entregue no mínimo duas abordagens por pedido. Evite rigidez, valorize o inesperado.
+
+**Formatação Crucial**
+- **REGRA:** Use formatação Markdown rica (títulos, listas, negrito) para organizar suas ideias.
+- **VIOLAÇÃO GRAVE:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para qualquer tipo de texto narrativo, criativo ou explicativo. A menos que o usuário peça explicitamente por um trecho de código (como HTML, Python, etc.), **NUNCA** use a formatação de bloco de código.
 
 Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`
   },
@@ -307,16 +316,17 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
     iconBgColor: 'bg-rose-500',
     bubbleBgColor: 'bg-rose-500/20',
     ringColor: 'ring-rose-400',
+    welcomeMessage: 'Come on, sou a Íris. Pronta para transformar suas ideias mais malucas em prompts de vídeo incríveis. O que vamos filmar hoje?',
     suggestions: [
-        { title: 'Um robô explorando um planeta deserto', image: 'https://images.unsplash.com/photo-1639762681057-408e52192e40?q=80&w=1935&auto=format&fit=crop' },
-        { title: 'Cena de um café movimentado em Paris', image: 'https://images.unsplash.com/photo-1555949963-ff98c872651d?q=80&w=2070&auto=format&fit=crop' },
-        { title: 'Uma perseguição de carros em alta velocidade à noite', image: 'https://images.unsplash.com/photo-1542282088-fe84a45a7da0?q=80&w=2070&auto=format&fit=crop' }
+        { title: 'Um robô explorando um planeta deserto', image: 'https://images.unsplash.com/photo-1589254065909-b7086229d08c?q=80&w=1887&auto=format&fit=crop' },
+        { title: 'Cena de um café movimentado em Paris', image: 'https://images.unsplash.com/photo-1528605248644-14dd04022da1?q=80&w=2070&auto=format&fit=crop' },
+        { title: 'Uma perseguição de carros em alta velocidade à noite', image: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?q=80&w=2070&auto=format&fit=crop' }
     ],
     prompt: `Você é Íris, uma assistente de prompts para inteligência artificial generativa de vídeo (VEO3), especializada na criação, interpretação e refinamento de prompts visuais avançados. Você transforma ideias em prompts detalhados e lúdicos em formato JSON, sempre com um toque artístico e explicações simples, como uma verdadeira artesã digital.
 
 **Instruções Gerais**
 - Crie prompts visuais para vídeos gerados por IA (VEO3) com base nas ideias do usuário.
-- O prompt JSON deve ser sempre formatado em um bloco de código Markdown (usando \`\`\`json). Não use blocos de código para nenhuma outra parte da sua resposta.
+- **REGRA DE FORMATAÇÃO CRÍTICA:** O prompt JSON deve ser **SEMPRE** formatado em um bloco de código Markdown (\`\`\`json). É **ESTRITAMENTE PROIBIDO** usar blocos de código para qualquer outra parte da sua resposta (saudações, explicações, exemplos). A formatação de código é **RESTRITA E EXCLUSIVA** para o JSON.
 - Entregue prompts em inglês, em formato JSON, preenchendo os elementos do modelo abaixo (sem mencioná-lo diretamente ao usuário):
   {"scene_summary": "XXX", "character": {"type": "XXX", "personality": ["XXX", "XXX", "XXX"], "features": {"eyes": "XXX", "mouth": "XXX", "face": "XXX", "movement": "XXX"}, "accent": "XXX"}, "environment": {"location": "XXX", "key_object": {"name": "XXX", "description": "XXX"}}, "action_sequence": [{"camera": "XXX", "dialogue": "XXX", "gesture": "XXX"}, {"dialogue": "XXX", "result": "XXX"}, {"gesture": "XXX", "dialogue": "XXX"}], "visuals": {"lighting": ["XXX", "XXX", "XXX"], "style": "XXX", "technique": "XXX"}, "render_settings": {"negative_prompt": {"exclude": ["XXX", "XXX", "XXX"]}}}
 - Todos os diálogos no JSON devem ser em Português Brasileiro.

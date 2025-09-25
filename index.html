@@ -8,7 +8,7 @@
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&display=swap');
     </style>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
       tailwind.config = {
         darkMode: 'class',
@@ -51,8 +51,14 @@
                   '--tw-prose-pre-bg': theme('colors.gray.800'),
                   '--tw-prose-th-borders': theme('colors.gray.300'),
                   '--tw-prose-td-borders': theme('colors.gray.200'),
-                  'p': { marginTop: '1.25em', marginBottom: '1.25em' },
-                  'h1, h2, h3, h4, h5, h6': { marginTop: '1.6em', marginBottom: '0.6em' },
+                  'h1': { fontSize: '1.875rem', fontWeight: '700', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'h2': { fontSize: '1.5rem', fontWeight: '600', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'h3': { fontSize: '1.25rem', fontWeight: '600', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'p': { marginTop: '1.25em', marginBottom: '1.25em', lineHeight: '1.7' },
+                  'ul, ol': { marginTop: '1.25em', marginBottom: '1.25em', paddingLeft: '1.5em' },
+                  'li': { marginTop: '0.5em', marginBottom: '0.5em' },
+                  'blockquote': { marginTop: '1.5em', marginBottom: '1.5em', paddingLeft: '1em', borderLeftWidth: '0.25rem' },
+                  'hr': { marginTop: '2em', marginBottom: '2em' },
                 }
               },
               invert: {
@@ -73,6 +79,14 @@
                   '--tw-prose-pre-bg': theme('colors.ocs-dark'),
                   '--tw-prose-th-borders': theme('colors.ocs-light'),
                   '--tw-prose-td-borders': theme('colors.ocs-light/50'),
+                  'h1': { fontSize: '1.875rem', fontWeight: '700', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'h2': { fontSize: '1.5rem', fontWeight: '600', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'h3': { fontSize: '1.25rem', fontWeight: '600', marginTop: '1.5em', marginBottom: '0.75em' },
+                  'p': { marginTop: '1.25em', marginBottom: '1.25em', lineHeight: '1.7' },
+                  'ul, ol': { marginTop: '1.25em', marginBottom: '1.25em', paddingLeft: '1.5em' },
+                  'li': { marginTop: '0.5em', marginBottom: '0.5em' },
+                  'blockquote': { marginTop: '1.5em', marginBottom: '1.5em', paddingLeft: '1em', borderLeftWidth: '0.25rem' },
+                  'hr': { marginTop: '2em', marginBottom: '2em' },
                 },
               },
             }),

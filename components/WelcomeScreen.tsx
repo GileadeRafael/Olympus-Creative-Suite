@@ -44,6 +44,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ assistant, onSendM
             <h1 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900 dark:text-white">
                 Como posso ajudar?
             </h1>
+            <p className="mt-4 text-lg text-gray-500 dark:text-ocs-text-dim max-w-xl mx-auto">
+                {assistant.welcomeMessage}
+            </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 w-full max-w-3xl">

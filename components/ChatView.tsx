@@ -28,10 +28,10 @@ const CodeBlock: React.FC<any> = ({ node, inline, className, children, ...props 
   };
 
   return !inline ? (
-    <div className="relative my-4 rounded-lg bg-ocs-dark text-sm">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-ocs-light/20">
-        <span className="text-xs font-sans text-ocs-text-dim">{match ? match[1] : 'code'}</span>
-        <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-ocs-text-dim hover:text-white transition-colors">
+    <div className="relative my-4 rounded-lg bg-gray-100 dark:bg-ocs-dark text-sm border border-gray-200 dark:border-ocs-light/20">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-ocs-light/20">
+        <span className="text-xs font-sans text-gray-500 dark:text-ocs-text-dim">{match ? match[1] : 'code'}</span>
+        <button onClick={handleCopy} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-900 dark:text-ocs-text-dim dark:hover:text-white transition-colors">
           {isCopied ? <CheckIcon className="w-4 h-4 text-ocs-green" /> : <CopyIcon className="w-4 h-4" />}
           {isCopied ? 'Copied!' : 'Copy code'}
         </button>
@@ -78,12 +78,12 @@ const ChatBubble: React.FC<{ message: ChatMessage; assistant: Assistant }> = ({ 
     <div className={`flex items-start gap-4 ${isUser ? 'justify-end' : 'justify-start'}`}>
       {!isUser && assistantAvatar}
       
-      <div className={`flex flex-col max-w-xl xl:max-w-2xl ${isUser ? 'items-end' : 'items-start'}`}>
-        <div className="flex items-center gap-3 text-xs text-ocs-text-dim mb-1 px-1">
+      <div className={`flex flex-col max-w-xl xl:max-w-2xl min-w-0 ${isUser ? 'items-end' : 'items-start'}`}>
+        <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-ocs-text-dim mb-1 px-1">
           <span>{timestamp}</span>
         </div>
         
-        <div className={`rounded-xl p-3 prose dark:prose-invert ${isUser ? 'bg-ocs-light' : 'bg-ocs-med'}`} style={{ overflowWrap: 'break-word' }}>
+        <div className={`w-full rounded-xl p-3 prose prose-lg dark:prose-invert break-words ${isUser ? 'bg-gray-200 dark:bg-ocs-light' : 'bg-white border border-gray-200 dark:border-transparent dark:bg-ocs-med'}`}>
            {imageParts.length > 0 && (
                 <div className={`grid gap-2 mb-2 ${imageParts.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     {imageParts.map((part, index) => (
@@ -99,12 +99,20 @@ const ChatBubble: React.FC<{ message: ChatMessage; assistant: Assistant }> = ({ 
             {textContent ? (
                 <ReactMarkdown 
                 remarkPlugins={[remarkGfm]}
-                components={{ code: CodeBlock }}
+                components={{ 
+                    code: CodeBlock,
+                    table: ({node, ...props}) => (
+                        <div className="overflow-x-auto">
+                            <table {...props} className="my-0" />
+                        </div>
+                    ),
+                }}
                 >
                 {textContent}
                 </ReactMarkdown>
             ) : (
-                isUser && imageParts.length > 0 ? null : <p>...</p>
+                // Render nothing if it's a model message that is still empty, or a user message that only contains images.
+                !isUser || (isUser && imageParts.length > 0) ? null : <p>...</p>
             )}
         </div>
       </div>
@@ -119,11 +127,11 @@ const LoadingBubble: React.FC<{ assistant: Assistant }> = ({ assistant }) => (
         <img src={assistant.icon} alt={assistant.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
       
         <div className="flex flex-col items-start">
-            <div className="flex items-center gap-3 text-xs text-ocs-text-dim mb-1 px-1">
+            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-ocs-text-dim mb-1 px-1">
                 <span>{assistant.name} is typing...</span>
             </div>
         
-            <div className="rounded-xl p-3 bg-ocs-med">
+            <div className="rounded-xl p-3 bg-white dark:bg-ocs-med border border-gray-200 dark:border-transparent">
                 <div className="flex items-center space-x-1.5 py-1">
                     <span className="w-2 h-2 bg-gray-400 dark:bg-ocs-lighter rounded-full animate-bounce [animation-delay:-0.3s]"></span>
                     <span className="w-2 h-2 bg-gray-400 dark:bg-ocs-lighter rounded-full animate-bounce [animation-delay:-0.15s]"></span>
@@ -143,11 +151,19 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
 
   const isNewChat = chatHistory.length === 0;
 
+  const lastMessage = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1] : null;
+  const isAwaitingFirstChunk =
+    isLoading &&
+    lastMessage?.role === 'model' &&
+    ((lastMessage.parts.find(p => 'text' in p) as { text: string })?.text ?? '').trim() === '';
+
+
   useEffect(() => {
-    if (!isLoading) {
+    // Scroll smoothly unless we are awaiting the first chunk, to avoid jitter.
+    if (!isAwaitingFirstChunk) {
       chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [chatHistory, isLoading]);
+  }, [chatHistory, isAwaitingFirstChunk]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -160,7 +176,6 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
     const files = e.target.files;
     if (!files) return;
 
-    // FIX: Explicitly type the 'file' parameter as 'File' to allow accessing properties like '.name' and '.type' and to ensure it's assignable to Blob.
     const newImagePromises = Array.from(files).map((file: File) => {
         return new Promise<{ id: string; mimeType: string; data: string }>((resolve) => {
             const reader = new FileReader();
@@ -209,38 +224,42 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
                 <WelcomeScreen assistant={assistant} onSendMessage={onSendMessage} />
             ) : (
                 <div className="max-w-4xl mx-auto space-y-8">
-                {chatHistory.map((msg, index) => (
-                    <ChatBubble key={index} message={msg} assistant={assistant} />
-                ))}
-                {isLoading && <LoadingBubble assistant={assistant} />}
-                <div ref={chatEndRef} />
+                    {chatHistory.map((msg, index) => {
+                        // Don't render the empty model bubble while waiting for the first chunk.
+                        if (index === chatHistory.length - 1 && isAwaitingFirstChunk) {
+                            return null;
+                        }
+                        return <ChatBubble key={index} message={msg} assistant={assistant} />;
+                    })}
+                    {isAwaitingFirstChunk && <LoadingBubble assistant={assistant} />}
+                    <div ref={chatEndRef} />
                 </div>
             )}
         </div>
         <div className="p-4 md:px-6 md:pb-6">
             <div className="max-w-3xl mx-auto">
                 <div className="flex justify-start mb-2 ml-2">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-ocs-darker border border-ocs-light/20 rounded-lg text-sm cursor-pointer">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white dark:bg-ocs-darker border border-gray-200 dark:border-ocs-light/20 rounded-lg text-sm cursor-pointer">
                         <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
                             <img src={assistant.icon} alt={assistant.name} className="w-full h-full object-cover" />
                         </div>
-                        <span className="font-medium text-ocs-text">{assistant.name}</span>
-                        <svg className="w-4 h-4 text-ocs-text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <span className="font-medium text-gray-800 dark:text-ocs-text">{assistant.name}</span>
+                        <svg className="w-4 h-4 text-gray-500 dark:text-ocs-text-dim" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </svg>
                     </div>
                 </div>
                 <form onSubmit={handleSubmit} className="relative">
-                    <div className="bg-ocs-darker rounded-2xl flex flex-col border border-ocs-light/30 shadow-lg">
+                    <div className="bg-white dark:bg-ocs-darker rounded-2xl flex flex-col border border-gray-300 dark:border-ocs-light/30 shadow-lg">
                         {imagesToSend.length > 0 && (
-                            <div className="p-2 flex flex-wrap gap-2 border-b border-ocs-light/30">
+                            <div className="p-2 flex flex-wrap gap-2 border-b border-gray-200 dark:border-ocs-light/30">
                                 {imagesToSend.map(image => (
                                 <div key={image.id} className="relative group w-16 h-16">
                                     <img src={`data:${image.mimeType};base64,${image.data}`} alt="Preview" className="w-full h-full object-cover rounded-md" />
                                     <button
                                     type="button"
                                     onClick={() => handleRemoveImage(image.id)}
-                                    className="absolute top-0 right-0 -mt-1 -mr-1 w-5 h-5 bg-ocs-darker rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute top-0 right-0 -mt-1 -mr-1 w-5 h-5 bg-gray-200 text-gray-700 dark:bg-ocs-darker dark:text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     aria-label="Remove image"
                                     >
                                     <XIcon className="w-3 h-3" />
@@ -260,7 +279,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
                                 }
                             }}
                             placeholder="What do you want to see..."
-                            className="flex-1 bg-transparent resize-none outline-none text-gray-200 placeholder-ocs-text-dim p-4 max-h-48 w-full"
+                            className="flex-1 bg-transparent resize-none outline-none text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-ocs-text-dim p-4 max-h-48 w-full"
                             rows={1}
                         />
                         <div className="flex justify-between items-center p-2">
@@ -275,7 +294,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
                             <button
                                 type="button"
                                 onClick={handleImageButtonClick}
-                                className={`p-2 rounded-lg hover:bg-ocs-light/60 transition-colors ${imagesToSend.length > 0 ? 'text-ocs-blue' : 'text-ocs-text-dim'}`}
+                                className={`p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-ocs-light/60 transition-colors ${imagesToSend.length > 0 ? 'text-ocs-blue' : 'text-gray-500 dark:text-ocs-text-dim'}`}
                                 aria-label="Add image"
                             >
                                 <ImageIcon className="w-6 h-6" />
@@ -283,7 +302,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ assistant, chatHistory, isLo
                             <button
                                 type="submit"
                                 disabled={isLoading || (!input.trim() && imagesToSend.length === 0)}
-                                className="p-2.5 rounded-lg bg-ocs-blue text-white disabled:bg-ocs-light disabled:cursor-not-allowed transition-all hover:bg-blue-600 active:scale-95"
+                                className="p-2.5 rounded-lg bg-ocs-blue text-white disabled:bg-gray-300 dark:disabled:bg-ocs-light disabled:cursor-not-allowed transition-all hover:bg-blue-600 active:scale-95"
                                 aria-label="Send message"
                             >
                                 <SendArrowIcon className="w-6 h-6" />
