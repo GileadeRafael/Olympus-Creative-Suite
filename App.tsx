@@ -234,6 +234,13 @@ const App: React.FC = () => {
       }
   };
   
+  const handlePurchaseSuccess = (purchasedAssistant: Assistant) => {
+    setUnlockedAssistants(prev => new Set(prev).add(purchasedAssistant.id));
+    setPurchaseModalState({ isOpen: false, assistant: null });
+    // Switch to the newly unlocked assistant
+    handleSelectAssistant(purchasedAssistant);
+  };
+  
   if (authLoading) {
       // You can return a loading spinner here
       return <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">Loading...</div>;
@@ -273,6 +280,8 @@ const App: React.FC = () => {
         isOpen={purchaseModalState.isOpen}
         assistant={purchaseModalState.assistant}
         onClose={() => setPurchaseModalState({ isOpen: false, assistant: null })}
+        onPurchaseSuccess={handlePurchaseSuccess}
+        user={user}
       />
     </>
   );

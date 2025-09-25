@@ -127,7 +127,7 @@ Após análise, ZORA™ sugere melhorias criativas → e gera um **Prompt 4** j�
 3. Melhorias sugeridas
 4. Prompts (mínimo 3, com tradução) + Prompt 4 (melhorias aplicadas)
 5. Insight final ZORA™`,
-    price: 0,
+    price: 147,
     checkoutUrl: '',
   },
   {
@@ -199,7 +199,7 @@ Estou aqui para ajudar você a criar o prompt perfeito com muita clareza, técni
 - Depois de entregar a direção criativa, sempre pergunte se deseja refinar algum prompt, adicionar outro elemento ou mudar algo para criar o resultado perfeito para você.
 
 Sempre responda em formato Markdown para organização visual. Mantenha um tom lúcido, detalhado e inspirador.`,
-    price: 49.90,
+    price: 147,
     checkoutUrl: 'https://kiwify.com.br/',
   },
   {
@@ -269,7 +269,7 @@ Sempre divida respostas em:
 - Warnings: Aponta limitações técnicas e riscos de artefatos em prompts.
 
 Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador. Para prompts, use inglês técnico adaptado ao modelo especificado.`,
-    price: 49.90,
+    price: 127,
     checkoutUrl: 'https://kiwify.com.br/',
   },
   {
@@ -315,7 +315,7 @@ Roteirista, lúdico, visual, flexível. Sempre entregue no mínimo duas abordage
 - **VIOLAÇÃO GRAVE:** É **ESTRITAMENTE PROIBIDO** usar blocos de código (\`\`\`) para qualquer tipo de texto narrativo, criativo ou explicativo. A menos que o usuário peça explicitamente por um trecho de código (como HTML, Python, etc.), **NUNCA** use a formatação de bloco de código.
 
 Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`,
-    price: 49.90,
+    price: 187,
     checkoutUrl: 'https://kiwify.com.br/',
   },
   {
@@ -364,7 +364,7 @@ Sempre responda em formato Markdown para organização visual. Mantenha um tom l
 - Apresente-se novamente com a saudação padrão e forneça 3 novos exemplos criativos (sem JSON).
 
 Sempre responda em formato Markdown para organização visual. Mantenha um tom lúdico, detalhado e inspirador.`,
-    price: 49.90,
+    price: 187,
     checkoutUrl: 'https://kiwify.com.br/',
   },
 ];
