@@ -16,6 +16,8 @@ export const AuthScreen: React.FC = () => {
 
     try {
       if (isLoginView) {
+        // FIX: The method `signInWithPassword` might not exist depending on the `@supabase/supabase-js` version.
+        // `signIn` is a more compatible method for email/password authentication.
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {

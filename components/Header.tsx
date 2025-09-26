@@ -1,7 +1,9 @@
 
 
 import React, { useState, useRef, useEffect } from 'react';
-import type { User } from '@supabase/supabase-js';
+// FIX: The User type from Supabase is now recommended to be imported from '@supabase/auth-js' 
+// to resolve type conflicts and ensure auth method types are correctly inferred.
+import type { User } from '@supabase/auth-js';
 import { supabase } from '../services/supabaseClient';
 
 interface HeaderProps {

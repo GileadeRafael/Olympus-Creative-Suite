@@ -1,7 +1,10 @@
 
 import React from 'react';
 import { useState, useCallback, useEffect, useRef } from 'react';
-import type { User } from '@supabase/supabase-js';
+// FIX: The User type from Supabase is now recommended to be imported from '@supabase/auth-js'
+// to avoid issues with re-exports in different versions of '@supabase/supabase-js'.
+// This also helps resolve type inference issues for auth methods like `onAuthStateChange`.
+import type { User } from '@supabase/auth-js';
 import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
 import { Header } from './components/Header';
@@ -35,33 +38,34 @@ const App: React.FC = () => {
     error: null,
   });
   
-  // A ref to track if the auth check has completed to prevent the timeout from firing unnecessarily.
-  const authCompleted = useRef(false);
+  // A ref to track the component's mount status
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+        isMounted.current = false;
+    };
+  }, []);
 
   // Robust authentication with a fail-safe timeout
   useEffect(() => {
-    authCompleted.current = false;
     setAuthLoading(true);
     console.log("Auth effect started. Setting up listener and fail-safe timer.");
 
-    // Fail-safe timer: If auth takes too long, stop loading and show login.
+    // Fail-safe timer: If authLoading is still true after 7s, force it to false.
     const authTimeout = setTimeout(() => {
-      if (!authCompleted.current) {
-        console.warn("Authentication timed out after 7 seconds. This can happen due to network issues or corrupted browser data. Showing login screen.");
+      // Check if loading is still active when the timer fires
+      if (isMounted.current) {
+        console.warn("Authentication timed out after 7 seconds. This can happen due to network issues or corrupted browser data. Forcing login screen.");
+        setUser(null);
         setAuthLoading(false);
-        setUser(null); // Ensure user is logged out
       }
     }, 7000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        // If we get a response, clear the fail-safe timer
-        clearTimeout(authTimeout);
-        
-        // Prevent running the logic multiple times if the listener fires rapidly
-        if (authCompleted.current && event !== 'SIGNED_OUT') return;
-        
-        authCompleted.current = true;
+        if (!isMounted.current) return; // Don't do anything if component is unmounted
+
         console.log(`Supabase auth event received: ${event}`, session ? 'Session found' : 'No session');
         
         const currentUser = session?.user ?? null;
@@ -77,13 +81,13 @@ const App: React.FC = () => {
 
               if (error) throw error;
 
-              const unlockedIds = new Set(data.map(item => item.assistant_id));
+              // FIX: Explicitly cast assistant_id to string to resolve type mismatch for the Set<string>.
+              const unlockedIds = new Set(data.map(item => item.assistant_id as string));
               setUnlockedAssistants(unlockedIds);
               console.log('Unlocked assistants loaded:', unlockedIds);
             } catch (error) {
                 console.error('Error fetching unlocked assistants:', error);
-                // In case of error, still proceed to unlock the UI
-                 setUnlockedAssistants(new Set());
+                setUnlockedAssistants(new Set());
             }
         } else {
           console.log("No user session. Clearing local data.");
@@ -93,6 +97,7 @@ const App: React.FC = () => {
 
         console.log("Authentication check complete. Setting auth loading to false.");
         setAuthLoading(false);
+        clearTimeout(authTimeout); // Clear the timeout as auth completed successfully
       }
     );
 
