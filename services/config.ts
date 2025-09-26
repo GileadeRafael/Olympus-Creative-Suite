@@ -20,13 +20,20 @@
  * 
  * =======================================================================================
  * 
- *  INSTRUCTIONS:
- *  1. Replace "COLE_SUA_SUPABASE_URL_AQUI" with your Supabase project URL.
- *  2. Replace "COLE_SUA_CHAVE_ANON_SUPABASE_AQUI" with your Supabase "anon" (public) key.
- *  3. Replace "COLE_SUA_CHAVE_API_GEMINI_AQUI" with your Gemini API Key.
+ *  INSTRUCTIONS FOR DEPLOYMENT:
+ *  1. FILL IN YOUR KEYS: Replace the placeholder values below with your actual credentials
+ *     from Supabase and Google AI Studio.
+ * 
+ *  2. (CRITICAL FOR SECURITY) ADD TO .gitignore: If you are using Git (e.g., with GitHub),
+ *     create a file named `.gitignore` in the root of your project (if it doesn't exist)
+ *     and add the following line to it:
+ *     `services/config.ts`
+ *     This will prevent you from accidentally publishing your secret keys.
+ * 
+ *  3. DEPLOY: Now you can deploy your application to Vercel.
  */
 export const CONFIG = {
-  SUPABASE_URL: "COLE_SUA_SUPABASE_URL_AQUI",
-  SUPABASE_ANON_KEY: "COLE_SUA_CHAVE_ANON_SUPABASE_AQUI",
-  API_KEY: "COLE_SUA_CHAVE_API_GEMINI_AQUI",
+  SUPABASE_URL: "https://nzmfromwgnbjmbhrifeg.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56bWZyb213Z25iam1iaHJpZmVnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4MzI1ODAsImV4cCI6MjA3NDQwODU4MH0.ba_n61ffKId6VLJ1Z6gWns3vPerJGYjpG-ZMDeDuBXA",
+  API_KEY: "AIzaSyDE2gM_c3uqH7B7d1nhircQQZ2RIPhdx3c",
 };

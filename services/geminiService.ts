@@ -16,7 +16,7 @@ function getAiClient(): GoogleGenAI {
   const apiKey = CONFIG.API_KEY;
 
   if (apiKey.startsWith("COLE_SUA") || !apiKey) {
-    const errorMessage = "Chave da API da Gemini não configurada. Por favor, edite o arquivo 'services/config.ts' e adicione sua API Key.";
+    const errorMessage = "Chave da API da Gemini não configurada. Por favor, edite o arquivo 'services/config.ts' e adicione sua API Key. O aplicativo não pode funcionar sem ela.";
     console.error(errorMessage);
     // The Supabase client will likely throw first, but this is a fallback.
     throw new Error(errorMessage);
