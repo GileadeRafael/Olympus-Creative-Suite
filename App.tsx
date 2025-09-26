@@ -1,7 +1,7 @@
 
 
 import React from 'react';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 // FIX: The User type from Supabase is now recommended to be imported from '@supabase/auth-js'
 // to avoid issues with re-exports in different versions of '@supabase/supabase-js'.
 // This also helps resolve type inference issues for auth methods like `onAuthStateChange`.
@@ -39,83 +39,45 @@ const App: React.FC = () => {
     error: null,
   });
   
-  // A ref to track the component's mount status
-  const isMounted = useRef(true);
-  useEffect(() => {
-    isMounted.current = true;
-    return () => {
-        isMounted.current = false;
-    };
-  }, []);
-
-  // Robust authentication with a fail-safe timeout
+  // Simplified and robust authentication effect
   useEffect(() => {
     setAuthLoading(true);
-    console.log("Auth effect started. Setting up listener and fail-safe timer.");
-
-    // Fail-safe timer: If authLoading is still true after 7s, force it to false.
-    const authTimeout = setTimeout(() => {
-      // Check if loading is still active when the timer fires
-      if (isMounted.current) {
-        console.warn("Authentication timed out after 7 seconds. This can happen due to network issues or corrupted browser data. Forcing login screen.");
-        setUser(null);
-        setAuthLoading(false);
-      }
-    }, 7000);
-
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted.current) return; // Don't do anything if component is unmounted
-
-        console.log(`Supabase auth event received: ${event}`, session ? 'Session found' : 'No session');
-        
+      async (_event, session) => {
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-            console.log("User detected. Fetching unlocked assistants...");
             try {
-              const { data, error } = await supabase
-                .from('unlocked_assistants')
-                .select('assistant_id')
-                .eq('user_id', currentUser.id);
+                const { data, error } = await supabase
+                    .from('unlocked_assistants')
+                    .select('assistant_id')
+                    .eq('user_id', currentUser.id);
 
-              if (error) throw error;
-
-              // FIX: Explicitly cast assistant_id to string to resolve type mismatch for the Set<string>.
-              const unlockedIds = new Set(data.map(item => item.assistant_id as string));
-              setUnlockedAssistants(unlockedIds);
-              console.log('Unlocked assistants loaded:', unlockedIds);
+                if (error) throw error;
+                
+                const unlockedIds = new Set(data.map(item => String(item.assistant_id)));
+                setUnlockedAssistants(unlockedIds);
             } catch (error: any) {
-                console.error('Error fetching unlocked assistants. This is likely due to a Row Level Security (RLS) policy on your Supabase table. Please check your policies.', {
+                console.error('Error fetching unlocked assistants:', {
                     message: error.message,
                     details: error.details,
                     hint: error.hint,
                 });
-                setUnlockedAssistants(new Set());
+                setUnlockedAssistants(new Set()); // Reset on error
             }
         } else {
-          console.log("No user session. Clearing local data.");
-          setUnlockedAssistants(new Set());
-          setChatHistories({});
-          // FIX: If a user logs out while a message is processing, the `isLoading`
-          // state could get stuck. Resetting all transient chat state here ensures
-          // that a subsequent login starts with a clean slate.
-          setIsLoading(false);
-          setCurrentSessionId(null);
+            // Clear all user-specific data on logout or session expiry
+            setUnlockedAssistants(new Set());
+            setChatHistories({});
+            setCurrentSessionId(null);
+            setIsLoading(false); // Ensure loading indicators are off
         }
-
-        console.log("Authentication check complete. Setting auth loading to false.");
         setAuthLoading(false);
-        clearTimeout(authTimeout); // Clear the timeout as auth completed successfully
       }
     );
 
-    console.log("Auth state change listener attached.");
-
     return () => {
-      console.log("Unsubscribing from auth changes and clearing timer.");
-      clearTimeout(authTimeout);
       subscription.unsubscribe();
     };
   }, []);
@@ -350,11 +312,9 @@ const App: React.FC = () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
         console.error('Error signing out:', error);
-        // The onAuthStateChange listener will still handle the UI update, 
-        // but we log the error for debugging.
     }
-    // No need to manually set state here. The onAuthStateChange listener
-    // is the source of truth and will update the UI, clear chats, etc.
+    // The onAuthStateChange listener is the single source of truth
+    // and will handle all UI and state updates automatically.
   }, []);
   
   if (authLoading) {
