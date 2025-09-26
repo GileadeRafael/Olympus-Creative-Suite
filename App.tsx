@@ -1,6 +1,6 @@
 
 
-import React, 'react';
+import React from 'react';
 import { useState, useCallback, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Sidebar } from './components/Sidebar';
@@ -38,51 +38,72 @@ const App: React.FC = () => {
 
   // Handle Auth State Changes
   useEffect(() => {
-    console.log("Auth effect running...");
     setAuthLoading(true);
 
-    const loadingTimeout = setTimeout(() => {
-      console.warn("Supabase auth initialization timed out after 10 seconds. Proceeding...");
-      setAuthLoading(false);
-    }, 10000); // Increased to 10 seconds
+    // Proactively fetch session on initial load for robustness
+    const checkUserSession = async () => {
+        console.log("Checking for active Supabase session...");
+        try {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error) {
+                console.error("Error fetching session on initial load:", error);
+            }
+            
+            const currentUser = session?.user ?? null;
+            setUser(currentUser);
 
+            if (currentUser) {
+                console.log("User session found. Fetching unlocked assistants...");
+                const { data, error: fetchError } = await supabase
+                    .from('unlocked_assistants')
+                    .select('assistant_id')
+                    .eq('user_id', currentUser.id);
+                
+                if (fetchError) {
+                    console.error('Error fetching unlocked assistants on init:', fetchError);
+                } else {
+                    const unlockedIds = new Set(data.map(item => item.assistant_id));
+                    setUnlockedAssistants(unlockedIds);
+                    console.log("Unlocked assistants fetched on init:", unlockedIds);
+                }
+            }
+        } catch (err) {
+            console.error("Exception during initial session check:", err);
+            setUser(null);
+        } finally {
+            console.log("Initial authentication check finished.");
+            setAuthLoading(false);
+        }
+    };
+
+    checkUserSession();
+
+    // Listen for subsequent auth changes (login, logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log(`Supabase auth event received: ${event}`);
-        clearTimeout(loadingTimeout);
-
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && currentUser)) {
-            console.log("User signed in or session restored. Fetching unlocked assistants...");
-            const { data, error } = await supabase
+        if (event === 'SIGNED_IN') {
+             const { data, error } = await supabase
                 .from('unlocked_assistants')
                 .select('assistant_id')
-                .eq('user_id', currentUser.id);
-            
+                .eq('user_id', currentUser!.id);
             if (error) {
-                console.error('Error fetching unlocked assistants:', error);
-                setUnlockedAssistants(new Set());
+                 console.error('Error re-fetching unlocked assistants:', error);
             } else {
-                const unlockedIds = new Set(data.map(item => item.assistant_id));
-                setUnlockedAssistants(unlockedIds);
-                console.log("Unlocked assistants fetched:", unlockedIds);
+                setUnlockedAssistants(new Set(data.map(item => item.assistant_id)));
             }
         } else if (event === 'SIGNED_OUT') {
-            console.log("User signed out. Clearing unlocked assistants.");
+            console.log("User signed out. Clearing local data.");
             setUnlockedAssistants(new Set());
-        }
-        
-        if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
-            console.log("Authentication process finished. Hiding loading screen.");
-            setAuthLoading(false);
+            setChatHistories({}); // Clear chat histories on logout
         }
       }
     );
 
     return () => {
-      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
