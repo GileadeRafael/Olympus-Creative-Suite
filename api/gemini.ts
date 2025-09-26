@@ -1,7 +1,5 @@
-
 // api/gemini.ts
-import { GoogleGenAI, Chat } from "@google/genai";
-import type { Assistant } from '../constants';
+import { GoogleGenAI } from "@google/genai";
 import type { ChatMessage, Part } from '../types';
 
 // This function will be deployed as a Vercel Serverless Function
@@ -39,10 +37,12 @@ export default async function handler(req: Request) {
   }
 
   try {
-    const { assistant, history, type } = await req.json() as { assistant: Assistant, history: ChatMessage[], type: 'chat' | 'title' };
+    const body = await req.json();
+    const { type } = body;
     const ai = getAiClient();
 
     if (type === 'title') {
+        const { history } = body as { history: ChatMessage[] };
         const conversationForTitle = history
             .slice(0, 4)
             .map(msg => `${msg.role}: ${getPlainText(msg.parts)}`)
@@ -60,51 +60,57 @@ export default async function handler(req: Request) {
         });
     }
 
+    if (type === 'chat') {
+        const { prompt, history } = body as { prompt: string, history: ChatMessage[] };
 
-    // --- Handle Chat Streaming ---
-    const chat: Chat = ai.chats.create({
-        model: 'gemini-2.5-flash',
-        config: {
-            systemInstruction: assistant.prompt,
-        },
-        history: history.slice(0, -1) // Send all but the last message
-    });
-    
-    const lastMessage = history[history.length - 1];
-    
-    if (!lastMessage || lastMessage.role !== 'user') {
-        return new Response('Invalid last message in history', { status: 400 });
-    }
+        // The user's previous issue was that the API call failed silently.
+        // The fix was to sanitize the history to remove extra properties like 'timestamp'.
+        // This is crucial for the API call to succeed.
+        const sanitizedHistory = history.map(({ role, parts }) => ({ role, parts }));
+        
+        // FIX: Instead of using the subtle `systemInstruction`, we now use a more robust and explicit
+        // method. We prepend the assistant's personality prompt to the beginning of the chat history
+        // as the first "user" message, followed by a simple "model" confirmation. This ensures the
+        // model always understands its role without any ambiguity, fixing the silent hanging issue.
+        const chatHistoryWithPrompt = [
+            { role: 'user', parts: [{ text: prompt }] },
+            { role: 'model', parts: [{ text: "Understood." }] },
+            ...sanitizedHistory
+        ];
+        
+        const stream = new ReadableStream({
+          async start(controller) {
+            const encoder = new TextEncoder();
+            try {
+                const result = await ai.models.generateContentStream({
+                    model: 'gemini-2.5-flash',
+                    contents: chatHistoryWithPrompt,
+                });
 
-    // Create a new ReadableStream to pipe the Gemini response through
-    const stream = new ReadableStream({
-      async start(controller) {
-        const encoder = new TextEncoder();
-        try {
-            // Pass the parts array directly, which is a valid overload.
-            const result = await chat.sendMessageStream(lastMessage.parts);
-
-            for await (const chunk of result) {
-              if (chunk.text) {
-                controller.enqueue(encoder.encode(chunk.text));
-              }
+                for await (const chunk of result) {
+                  if (chunk.text) {
+                    controller.enqueue(encoder.encode(chunk.text));
+                  }
+                }
+                controller.close();
+            } catch(error) {
+                console.error("Error during Gemini stream processing:", error);
+                // Propagate the error to the client by calling controller.error.
+                // This will cause the client-side reader to throw an error,
+                // which can be caught to stop the loading state.
+                controller.error(error);
             }
-            controller.close();
-        } catch(error) {
-            console.error("Error during Gemini stream processing:", error);
-            // Propagate the error to the client by calling controller.error.
-            // This will cause the client-side reader to throw an error,
-            // which can be caught to stop the loading state.
-            controller.error(error);
-        }
-      },
-    });
+          },
+        });
 
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-      },
-    });
+        return new Response(stream, {
+          headers: {
+            'Content-Type': 'text/plain; charset=utf-8',
+          },
+        });
+    }
+    
+    return new Response('Invalid request type', { status: 400 });
 
   } catch (error: any) {
     console.error("Error in serverless function:", error);

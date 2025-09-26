@@ -4,28 +4,19 @@ import React, { useState, useRef, useEffect } from 'react';
 // FIX: The User type from Supabase is now recommended to be imported from '@supabase/auth-js' 
 // to resolve type conflicts and ensure auth method types are correctly inferred.
 import type { User } from '@supabase/auth-js';
-import { supabase } from '../services/supabaseClient';
 
 interface HeaderProps {
     user: User;
+    onLogout: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ user }) => {
+export const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     setIsMenuOpen(false); // Close menu immediately for better UX
-    console.log("Attempting to sign out...");
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        console.error('Error signing out:', error);
-        alert(`Error signing out: ${error.message}`);
-    } else {
-        console.log('Sign out successful. State listener will handle redirect.');
-        // No reload needed. The onAuthStateChange listener in App.tsx will
-        // detect the sign-out event and update the UI automatically.
-    }
+    onLogout();
   };
 
   useEffect(() => {
@@ -46,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
         <div className="relative" ref={menuRef}>
             <button 
                 onClick={() => setIsMenuOpen(prev => !prev)}
-                className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold bg-white text-ocs-dark rounded-lg shadow-sm hover:bg-gray-100 transition-colors"
+                className="flex items-center gap-2.5 px-3 py-2 text-sm font-semibold bg-white text-ocs-dark rounded-lg shadow-sm hover:bg-gray-100 transition-colors dark:bg-ocs-darker dark:text-ocs-text dark:hover:bg-ocs-med"
             >
                 <div className="w-6 h-6 rounded-full bg-ocs-green text-white flex items-center justify-center font-bold text-xs">
                     {user.email?.charAt(0).toUpperCase()}

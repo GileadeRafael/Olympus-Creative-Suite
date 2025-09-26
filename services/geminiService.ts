@@ -14,7 +14,10 @@ export async function* getChatResponse(assistant: Assistant, history: ChatMessag
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ assistant, history, type: 'chat' }),
+            // By sending only the prompt string instead of the entire assistant object,
+            // we significantly reduce the request payload size. This prevents potential
+            // errors from exceeding serverless function limits and improves performance.
+            body: JSON.stringify({ prompt: assistant.prompt, history, type: 'chat' }),
         });
 
         if (!response.ok) {
@@ -38,10 +41,9 @@ export async function* getChatResponse(assistant: Assistant, history: ChatMessag
         }
     } catch (error: any) {
         console.error("Error fetching chat response from serverless function:", error);
-        const errorMessage = error.message.includes('Server error:')
-            ? error.message // Pass the specific server error to the UI
-            : "An error occurred while connecting to the AI service. Please check the server logs.";
-        yield errorMessage;
+        // Re-throw the error so it can be caught by the calling component (App.tsx)
+        // This allows the UI to handle the error state, such as stopping the loading indicator.
+        throw error;
     }
 }
 

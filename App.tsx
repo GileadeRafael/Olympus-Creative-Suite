@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { useState, useCallback, useEffect, useRef } from 'react';
 // FIX: The User type from Supabase is now recommended to be imported from '@supabase/auth-js'
@@ -97,6 +98,11 @@ const App: React.FC = () => {
           console.log("No user session. Clearing local data.");
           setUnlockedAssistants(new Set());
           setChatHistories({});
+          // FIX: If a user logs out while a message is processing, the `isLoading`
+          // state could get stuck. Resetting all transient chat state here ensures
+          // that a subsequent login starts with a clean slate.
+          setIsLoading(false);
+          setCurrentSessionId(null);
         }
 
         console.log("Authentication check complete. Setting auth loading to false.");
@@ -195,6 +201,7 @@ const App: React.FC = () => {
     const newUserMessage: ChatMessage = {
       role: 'user',
       parts: userParts,
+      // FIX: Replaced non-existent 'aistudio.libs.Date' with standard 'Date' object to fix timestamp creation.
       timestamp: new Date().toISOString(),
     };
 
@@ -246,18 +253,21 @@ const App: React.FC = () => {
           updateChatTitle(currentSessionId, finalHistory);
       }
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error getting chat response:", error);
+      // Use the specific error message propagated from the service to give the user better feedback.
+      const errorText = `**Oops! Something went wrong.**\n\n${error.message || 'Please check the server logs or browser console for more details.'}`;
       const errorMessage: ChatMessage = {
         role: 'model',
-        parts: [{ text: 'Sorry, I encountered an error. Please try again.' }],
+        parts: [{ text: errorText }],
         timestamp: new Date().toISOString(),
       };
       setChatHistories(prev => {
          const newHistories = { ...prev };
          const session = newHistories[selectedAssistant.id]?.find(s => s.id === currentSessionId);
          if (session) {
-             session.messages.pop(); // remove the empty model message
+             // Replace the empty 'in-progress' model message with the error message.
+             session.messages.pop(); 
              session.messages.push(errorMessage);
          }
          return newHistories;
@@ -336,6 +346,17 @@ const App: React.FC = () => {
     setPurchaseModalState({ isOpen: false, assistant: null, isLoading: false, error: null });
   };
   
+  const handleLogout = useCallback(async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('Error signing out:', error);
+        // The onAuthStateChange listener will still handle the UI update, 
+        // but we log the error for debugging.
+    }
+    // No need to manually set state here. The onAuthStateChange listener
+    // is the source of truth and will update the UI, clear chats, etc.
+  }, []);
+  
   if (authLoading) {
       return <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">Loading...</div>;
   }
@@ -357,7 +378,7 @@ const App: React.FC = () => {
           unlockedAssistants={unlockedAssistants}
         />
         <div className="flex-1 flex flex-col relative">
-          <Header user={user} />
+          <Header user={user} onLogout={handleLogout} />
           <main className="flex-1 flex flex-col min-h-0">
               <ChatView
                   key={currentSessionId} // Re-mount component on session change
