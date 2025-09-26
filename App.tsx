@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
@@ -34,31 +34,56 @@ const App: React.FC = () => {
     isLoading: false,
     error: null,
   });
+  
+  // A ref to track if the auth check has completed to prevent the timeout from firing unnecessarily.
+  const authCompleted = useRef(false);
 
-  // New, more robust authentication handling using only onAuthStateChange
+  // Robust authentication with a fail-safe timeout
   useEffect(() => {
+    authCompleted.current = false;
     setAuthLoading(true);
-    console.log("Auth effect started. Setting up listener for session changes.");
+    console.log("Auth effect started. Setting up listener and fail-safe timer.");
+
+    // Fail-safe timer: If auth takes too long, stop loading and show login.
+    const authTimeout = setTimeout(() => {
+      if (!authCompleted.current) {
+        console.warn("Authentication timed out after 7 seconds. This can happen due to network issues or corrupted browser data. Showing login screen.");
+        setAuthLoading(false);
+        setUser(null); // Ensure user is logged out
+      }
+    }, 7000);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // If we get a response, clear the fail-safe timer
+        clearTimeout(authTimeout);
+        
+        // Prevent running the logic multiple times if the listener fires rapidly
+        if (authCompleted.current && event !== 'SIGNED_OUT') return;
+        
+        authCompleted.current = true;
         console.log(`Supabase auth event received: ${event}`, session ? 'Session found' : 'No session');
+        
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
             console.log("User detected. Fetching unlocked assistants...");
-            const { data, error } = await supabase
-              .from('unlocked_assistants')
-              .select('assistant_id')
-              .eq('user_id', currentUser.id);
+            try {
+              const { data, error } = await supabase
+                .from('unlocked_assistants')
+                .select('assistant_id')
+                .eq('user_id', currentUser.id);
 
-            if (error) {
+              if (error) throw error;
+
+              const unlockedIds = new Set(data.map(item => item.assistant_id));
+              setUnlockedAssistants(unlockedIds);
+              console.log('Unlocked assistants loaded:', unlockedIds);
+            } catch (error) {
                 console.error('Error fetching unlocked assistants:', error);
-            } else {
-                const unlockedIds = new Set(data.map(item => item.assistant_id));
-                setUnlockedAssistants(unlockedIds);
-                console.log('Unlocked assistants loaded:', unlockedIds);
+                // In case of error, still proceed to unlock the UI
+                 setUnlockedAssistants(new Set());
             }
         } else {
           console.log("No user session. Clearing local data.");
@@ -66,8 +91,6 @@ const App: React.FC = () => {
           setChatHistories({});
         }
 
-        // This is the crucial part: set loading to false after the first check is handled.
-        // onAuthStateChange fires immediately with the initial session state.
         console.log("Authentication check complete. Setting auth loading to false.");
         setAuthLoading(false);
       }
@@ -76,7 +99,8 @@ const App: React.FC = () => {
     console.log("Auth state change listener attached.");
 
     return () => {
-      console.log("Unsubscribing from auth changes.");
+      console.log("Unsubscribing from auth changes and clearing timer.");
+      clearTimeout(authTimeout);
       subscription.unsubscribe();
     };
   }, []);
