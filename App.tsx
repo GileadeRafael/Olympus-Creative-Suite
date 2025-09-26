@@ -78,7 +78,7 @@ const App: React.FC = () => {
       console.log("Unsubscribing from auth changes.");
       subscription.unsubscribe();
     };
-  }, [authLoading]); // The dependency ensures setAuthLoading is only called when needed.
+  }, []); // Empty dependency array ensures this runs only once on mount.
 
 
   useEffect(() => {

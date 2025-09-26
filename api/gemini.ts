@@ -75,7 +75,8 @@ export default async function handler(req: Request) {
         return new Response('Invalid last message in history', { status: 400 });
     }
 
-    const result = await chat.sendMessageStream({ message: lastMessage.parts as Part[] });
+    // FIX: The `sendMessageStream` method for chats expects a `message` property, not `parts`.
+    const result = await chat.sendMessageStream({ message: lastMessage.parts });
 
     // Create a new ReadableStream to pipe the Gemini response through
     const stream = new ReadableStream({
