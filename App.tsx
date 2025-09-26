@@ -36,77 +36,49 @@ const App: React.FC = () => {
     error: null,
   });
 
-  // Handle Auth State Changes
+  // Simplified and more robust authentication handling
   useEffect(() => {
-    setAuthLoading(true);
-
-    // Proactively fetch session on initial load for robustness
-    const checkUserSession = async () => {
-        console.log("Checking for active Supabase session...");
-        try {
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error) {
-                console.error("Error fetching session on initial load:", error);
-            }
-            
-            const currentUser = session?.user ?? null;
-            setUser(currentUser);
-
-            if (currentUser) {
-                console.log("User session found. Fetching unlocked assistants...");
-                const { data, error: fetchError } = await supabase
-                    .from('unlocked_assistants')
-                    .select('assistant_id')
-                    .eq('user_id', currentUser.id);
-                
-                if (fetchError) {
-                    console.error('Error fetching unlocked assistants on init:', fetchError);
-                } else {
-                    const unlockedIds = new Set(data.map(item => item.assistant_id));
-                    setUnlockedAssistants(unlockedIds);
-                    console.log("Unlocked assistants fetched on init:", unlockedIds);
-                }
-            }
-        } catch (err) {
-            console.error("Exception during initial session check:", err);
-            setUser(null);
-        } finally {
-            console.log("Initial authentication check finished.");
-            setAuthLoading(false);
-        }
-    };
-
-    checkUserSession();
-
-    // Listen for subsequent auth changes (login, logout)
+    // onAuthStateChange is the single source of truth for auth status.
+    // It fires once on initial load and again whenever the auth state changes.
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log(`Supabase auth event received: ${event}`);
+        console.log(`Supabase auth event: ${event}`);
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
-        if (event === 'SIGNED_IN') {
-             const { data, error } = await supabase
-                .from('unlocked_assistants')
-                .select('assistant_id')
-                .eq('user_id', currentUser!.id);
-            if (error) {
-                 console.error('Error re-fetching unlocked assistants:', error);
-            } else {
-                setUnlockedAssistants(new Set(data.map(item => item.assistant_id)));
-            }
-        } else if (event === 'SIGNED_OUT') {
-            console.log("User signed out. Clearing local data.");
-            setUnlockedAssistants(new Set());
-            setChatHistories({}); // Clear chat histories on logout
+        if (currentUser) {
+          // User is signed in, fetch their data
+          const { data, error } = await supabase
+            .from('unlocked_assistants')
+            .select('assistant_id')
+            .eq('user_id', currentUser.id);
+
+          if (error) {
+            console.error('Error fetching unlocked assistants:', error);
+          } else {
+            const unlockedIds = new Set(data.map(item => item.assistant_id));
+            setUnlockedAssistants(unlockedIds);
+            console.log('Unlocked assistants loaded:', unlockedIds);
+          }
+        } else {
+          // User is signed out or there's no session
+          setUnlockedAssistants(new Set());
+          setChatHistories({}); // Clear chat histories on logout
+        }
+
+        // As soon as we get the first auth event, the app is ready.
+        if (authLoading) {
+            console.log("Initial auth state processed. App is ready.");
+            setAuthLoading(false);
         }
       }
     );
 
     return () => {
+      console.log("Unsubscribing from auth changes.");
       subscription.unsubscribe();
     };
-  }, []);
+  }, [authLoading]); // The dependency ensures setAuthLoading is only called when needed.
 
 
   useEffect(() => {
