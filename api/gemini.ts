@@ -98,8 +98,11 @@ export default async function handler(req: Request) {
       },
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in serverless function:", error);
-    return new Response('An error occurred on the server.', { status: 500 });
+    if (error.message.includes("API key")) {
+        return new Response("Server configuration error: Gemini API key is missing. Please check your environment variables on Vercel.", { status: 500 });
+    }
+    return new Response(`An error occurred on the server: ${error.message}`, { status: 500 });
   }
 }

@@ -85,8 +85,12 @@ const App: React.FC = () => {
               const unlockedIds = new Set(data.map(item => item.assistant_id as string));
               setUnlockedAssistants(unlockedIds);
               console.log('Unlocked assistants loaded:', unlockedIds);
-            } catch (error) {
-                console.error('Error fetching unlocked assistants:', error);
+            } catch (error: any) {
+                console.error('Error fetching unlocked assistants. This is likely due to a Row Level Security (RLS) policy on your Supabase table. Please check your policies.', {
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint,
+                });
                 setUnlockedAssistants(new Set());
             }
         } else {

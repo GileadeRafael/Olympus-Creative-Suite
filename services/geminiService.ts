@@ -36,9 +36,12 @@ export async function* getChatResponse(assistant: Assistant, history: ChatMessag
             }
             yield decoder.decode(value, { stream: true });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error fetching chat response from serverless function:", error);
-        yield "An error occurred while connecting to the AI service. Please check the server logs.";
+        const errorMessage = error.message.includes('Server error:')
+            ? error.message // Pass the specific server error to the UI
+            : "An error occurred while connecting to the AI service. Please check the server logs.";
+        yield errorMessage;
     }
 }
 
