@@ -15,12 +15,16 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
+    setIsMenuOpen(false); // Close menu immediately for better UX
+    console.log("Attempting to sign out...");
     const { error } = await supabase.auth.signOut();
     if (error) {
         console.error('Error signing out:', error);
+        alert(`Error signing out: ${error.message}`);
     } else {
-        // Force a reload to clear all state and re-evaluate auth status from a clean slate.
-        window.location.reload();
+        console.log('Sign out successful. State listener will handle redirect.');
+        // No reload needed. The onAuthStateChange listener in App.tsx will
+        // detect the sign-out event and update the UI automatically.
     }
   };
 

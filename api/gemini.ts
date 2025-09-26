@@ -1,3 +1,4 @@
+
 // api/gemini.ts
 import { GoogleGenAI, Chat } from "@google/genai";
 import type { Assistant } from '../constants';
@@ -75,20 +76,27 @@ export default async function handler(req: Request) {
         return new Response('Invalid last message in history', { status: 400 });
     }
 
-    // Pass the parts array directly to sendMessageStream, which is a valid overload.
-    // This simplifies the call and resolves the hanging issue.
-    const result = await chat.sendMessageStream(lastMessage.parts);
-
     // Create a new ReadableStream to pipe the Gemini response through
     const stream = new ReadableStream({
       async start(controller) {
         const encoder = new TextEncoder();
-        for await (const chunk of result) {
-          if (chunk.text) {
-            controller.enqueue(encoder.encode(chunk.text));
-          }
+        try {
+            // Pass the parts array directly, which is a valid overload.
+            const result = await chat.sendMessageStream(lastMessage.parts);
+
+            for await (const chunk of result) {
+              if (chunk.text) {
+                controller.enqueue(encoder.encode(chunk.text));
+              }
+            }
+            controller.close();
+        } catch(error) {
+            console.error("Error during Gemini stream processing:", error);
+            // Propagate the error to the client by calling controller.error.
+            // This will cause the client-side reader to throw an error,
+            // which can be caught to stop the loading state.
+            controller.error(error);
         }
-        controller.close();
       },
     });
 

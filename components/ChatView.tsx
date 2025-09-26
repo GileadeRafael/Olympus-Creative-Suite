@@ -1,4 +1,5 @@
 
+
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'https://esm.sh/react-markdown@9';
 import remarkGfm from 'https://esm.sh/remark-gfm@4';
@@ -103,7 +104,7 @@ const ChatBubble: React.FC<{ message: ChatMessage; assistant: Assistant }> = ({ 
           <span>{timestamp}</span>
         </div>
         
-        <div className={`w-full rounded-xl p-3 prose dark:prose-invert break-words ${isUser ? 'bg-gray-200 dark:bg-ocs-light' : 'bg-white border border-gray-200 dark:border-transparent dark:bg-ocs-med'}`}>
+        <div className={`w-full rounded-xl p-3 prose dark:prose-invert [&>:first-child]:mt-0 [&>:last-child]:mb-0 break-words ${isUser ? 'bg-gray-200 dark:bg-ocs-light' : 'bg-white border border-gray-200 dark:border-transparent dark:bg-ocs-med'}`}>
            {imageParts.length > 0 && (
                 <div className={`grid gap-2 mb-2 ${imageParts.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     {imageParts.map((part, index) => (
@@ -128,7 +129,7 @@ const ChatBubble: React.FC<{ message: ChatMessage; assistant: Assistant }> = ({ 
                     ),
                 }}
                 >
-                {textContent}
+                {textContent.trim()}
                 </ReactMarkdown>
             ) : (
                 // Render nothing if it's a model message that is still empty, or a user message that only contains images.
