@@ -1,6 +1,7 @@
 
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { Sidebar } from './components/Sidebar';
 import { ChatView } from './components/ChatView';
@@ -37,22 +38,24 @@ const App: React.FC = () => {
 
   // Handle Auth State Changes
   useEffect(() => {
-    // Set a timeout to prevent the app from getting stuck on the loading screen
-    // if Supabase initialization fails or takes too long.
+    console.log("Auth effect running...");
+    setAuthLoading(true);
+
     const loadingTimeout = setTimeout(() => {
-      console.warn("Supabase auth initialization timed out. Proceeding...");
+      console.warn("Supabase auth initialization timed out after 10 seconds. Proceeding...");
       setAuthLoading(false);
-    }, 5000); // 5 seconds
+    }, 10000); // Increased to 10 seconds
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        clearTimeout(loadingTimeout); // Clear the timeout as we've received a response
+        console.log(`Supabase auth event received: ${event}`);
+        clearTimeout(loadingTimeout);
 
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (event === 'SIGNED_IN' || (event === 'INITIAL_SESSION' && currentUser)) {
-            // Fetch unlocked assistants when user logs in or session is restored
+            console.log("User signed in or session restored. Fetching unlocked assistants...");
             const { data, error } = await supabase
                 .from('unlocked_assistants')
                 .select('assistant_id')
@@ -60,25 +63,26 @@ const App: React.FC = () => {
             
             if (error) {
                 console.error('Error fetching unlocked assistants:', error);
-                setUnlockedAssistants(new Set()); // Reset on error
+                setUnlockedAssistants(new Set());
             } else {
                 const unlockedIds = new Set(data.map(item => item.assistant_id));
                 setUnlockedAssistants(unlockedIds);
+                console.log("Unlocked assistants fetched:", unlockedIds);
             }
         } else if (event === 'SIGNED_OUT') {
-            // Reset when user logs out
+            console.log("User signed out. Clearing unlocked assistants.");
             setUnlockedAssistants(new Set());
         }
         
-        // Only stop loading after the initial session has been processed.
         if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+            console.log("Authentication process finished. Hiding loading screen.");
             setAuthLoading(false);
         }
       }
     );
 
     return () => {
-      clearTimeout(loadingTimeout); // Clean up the timeout on component unmount
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);
