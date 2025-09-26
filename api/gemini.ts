@@ -58,30 +58,22 @@ export default async function handler(req: Request) {
 
         // Sanitize history to ensure it only contains 'role' and 'parts'.
         const sanitizedHistory = history.map(({ role, parts }) => ({ role, parts }));
-
-        // DEFINITIVE FIX: Use a robust priming method. The assistant's personality is
-        // sent as the first user message, followed by a canned model response. This
-        // establishes a valid, alternating conversation structure that the AI can
-        // reliably follow, preventing it from hanging.
-        const primedHistory = [
-            {
-                role: 'user',
-                parts: [{ text: prompt }],
-            },
-            {
-                role: 'model',
-                parts: [{ text: "Entendido. Estou pronto." }],
-            },
-            ...sanitizedHistory,
-        ];
         
         const stream = new ReadableStream({
           async start(controller) {
             const encoder = new TextEncoder();
             try {
+                // CORRECTED: The assistant's personality prompt is now correctly passed
+                // as a `systemInstruction`, which is the idiomatic way to provide
+                // context and instructions to the model for a conversation. This avoids
+                // polluting the chat history with a non-user message and is more
+                // reliable than the previous priming method.
                 const result = await ai.models.generateContentStream({
                     model: 'gemini-2.5-flash',
-                    contents: primedHistory,
+                    contents: sanitizedHistory,
+                    config: {
+                      systemInstruction: prompt,
+                    },
                 });
 
                 for await (const chunk of result) {
