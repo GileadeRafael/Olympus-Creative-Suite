@@ -15,7 +15,13 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   const menuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        console.error('Error signing out:', error);
+    } else {
+        // Force a reload to clear all state and re-evaluate auth status from a clean slate.
+        window.location.reload();
+    }
   };
 
   useEffect(() => {

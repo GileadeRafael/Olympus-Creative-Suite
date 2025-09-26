@@ -75,8 +75,9 @@ export default async function handler(req: Request) {
         return new Response('Invalid last message in history', { status: 400 });
     }
 
-    // Fix: `sendMessageStream` expects an object with a `message` property containing the content parts.
-    const result = await chat.sendMessageStream({ message: lastMessage.parts });
+    // Pass the parts array directly to sendMessageStream, which is a valid overload.
+    // This simplifies the call and resolves the hanging issue.
+    const result = await chat.sendMessageStream(lastMessage.parts);
 
     // Create a new ReadableStream to pipe the Gemini response through
     const stream = new ReadableStream({
@@ -94,7 +95,6 @@ export default async function handler(req: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
       },
     });
 
