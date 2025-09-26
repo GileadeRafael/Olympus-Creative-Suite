@@ -25,7 +25,6 @@ const App: React.FC = () => {
 
   // --- Authentication and Purchase State ---
   const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [unlockedAssistants, setUnlockedAssistants] = useState<Set<string>>(new Set());
   const [purchaseModalState, setPurchaseModalState] = useState<{
     isOpen: boolean;
@@ -41,7 +40,6 @@ const App: React.FC = () => {
   
   // Simplified and robust authentication effect
   useEffect(() => {
-    setAuthLoading(true);
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         const currentUser = session?.user ?? null;
@@ -73,7 +71,6 @@ const App: React.FC = () => {
             setCurrentSessionId(null);
             setIsLoading(false); // Ensure loading indicators are off
         }
-        setAuthLoading(false);
       }
     );
 
@@ -316,10 +313,6 @@ const App: React.FC = () => {
     // The onAuthStateChange listener is the single source of truth
     // and will handle all UI and state updates automatically.
   }, []);
-  
-  if (authLoading) {
-      return <div className="flex items-center justify-center h-screen w-full bg-dark-gradient font-sans text-ocs-text">Loading...</div>;
-  }
   
   if (!user) {
       return <AuthScreen />;
