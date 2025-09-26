@@ -35,70 +35,44 @@ const App: React.FC = () => {
     error: null,
   });
 
-  // New, more robust authentication handling
+  // New, more robust authentication handling using only onAuthStateChange
   useEffect(() => {
-    console.log("Auth effect started. Setting up session check and listener.");
     setAuthLoading(true);
+    console.log("Auth effect started. Setting up listener for session changes.");
 
-    // 1. Immediately check for an existing session.
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-        console.log("Initial getSession() completed.", session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        console.log(`Supabase auth event received: ${event}`, session ? 'Session found' : 'No session');
         const currentUser = session?.user ?? null;
         setUser(currentUser);
 
         if (currentUser) {
-            console.log("User found in initial session. Fetching data...");
+            console.log("User detected. Fetching unlocked assistants...");
             const { data, error } = await supabase
               .from('unlocked_assistants')
               .select('assistant_id')
               .eq('user_id', currentUser.id);
 
             if (error) {
-                console.error('Error fetching unlocked assistants on initial load:', error);
+                console.error('Error fetching unlocked assistants:', error);
             } else {
                 const unlockedIds = new Set(data.map(item => item.assistant_id));
                 setUnlockedAssistants(unlockedIds);
-                console.log('Unlocked assistants loaded on initial load:', unlockedIds);
+                console.log('Unlocked assistants loaded:', unlockedIds);
             }
         } else {
-            console.log("No user found in initial session.");
-        }
-        
-        console.log("Setting auth loading to false.");
-        setAuthLoading(false);
-    }).catch(err => {
-        console.error("Error during initial getSession():", err);
-        setAuthLoading(false);
-    });
-
-    // 2. Set up a listener for future auth changes (login, logout).
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log(`Supabase auth event received: ${event}`, session);
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          console.log("User state changed to logged in via listener. Fetching data...");
-          const { data, error } = await supabase
-            .from('unlocked_assistants')
-            .select('assistant_id')
-            .eq('user_id', currentUser.id);
-
-          if (error) {
-            console.error('Error fetching unlocked assistants in listener:', error);
-          } else {
-            const unlockedIds = new Set(data.map(item => item.assistant_id));
-            setUnlockedAssistants(unlockedIds);
-             console.log('Unlocked assistants loaded via listener:', unlockedIds);
-          }
-        } else {
-          console.log("User state changed to logged out via listener. Clearing data.");
+          console.log("No user session. Clearing local data.");
           setUnlockedAssistants(new Set());
           setChatHistories({});
         }
+
+        // This is the crucial part: set loading to false after the first check is handled.
+        // onAuthStateChange fires immediately with the initial session state.
+        console.log("Authentication check complete. Setting auth loading to false.");
+        setAuthLoading(false);
       }
     );
+
     console.log("Auth state change listener attached.");
 
     return () => {
