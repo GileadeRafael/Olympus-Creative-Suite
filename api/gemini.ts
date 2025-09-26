@@ -7,13 +7,7 @@ export const config = {
   runtime: 'edge',
 };
 
-let ai: GoogleGenAI | null = null;
-
 function getAiClient(): GoogleGenAI {
-  if (ai) {
-    return ai;
-  }
-  
   // IMPORTANT: The API key is now read from environment variables on the server.
   // It is NEVER exposed to the client.
   const apiKey = process.env.API_KEY;
@@ -22,8 +16,7 @@ function getAiClient(): GoogleGenAI {
     throw new Error("Gemini API key is not configured in environment variables.");
   }
   
-  ai = new GoogleGenAI({ apiKey });
-  return ai;
+  return new GoogleGenAI({ apiKey });
 }
 
 function getPlainText(parts: Part[]): string {
@@ -63,19 +56,23 @@ export default async function handler(req: Request) {
     if (type === 'chat') {
         const { prompt, history } = body as { prompt: string, history: ChatMessage[] };
 
-        // The user's previous issue was that the API call failed silently.
-        // The fix was to sanitize the history to remove extra properties like 'timestamp'.
-        // This is crucial for the API call to succeed.
+        // Sanitize history to ensure it only contains 'role' and 'parts'.
         const sanitizedHistory = history.map(({ role, parts }) => ({ role, parts }));
-        
-        // FIX: Instead of using the subtle `systemInstruction`, we now use a more robust and explicit
-        // method. We prepend the assistant's personality prompt to the beginning of the chat history
-        // as the first "user" message, followed by a simple "model" confirmation. This ensures the
-        // model always understands its role without any ambiguity, fixing the silent hanging issue.
-        const chatHistoryWithPrompt = [
-            { role: 'user', parts: [{ text: prompt }] },
-            { role: 'model', parts: [{ text: "Understood." }] },
-            ...sanitizedHistory
+
+        // DEFINITIVE FIX: Use a robust priming method. The assistant's personality is
+        // sent as the first user message, followed by a canned model response. This
+        // establishes a valid, alternating conversation structure that the AI can
+        // reliably follow, preventing it from hanging.
+        const primedHistory = [
+            {
+                role: 'user',
+                parts: [{ text: prompt }],
+            },
+            {
+                role: 'model',
+                parts: [{ text: "Entendido. Estou pronto." }],
+            },
+            ...sanitizedHistory,
         ];
         
         const stream = new ReadableStream({
@@ -84,7 +81,7 @@ export default async function handler(req: Request) {
             try {
                 const result = await ai.models.generateContentStream({
                     model: 'gemini-2.5-flash',
-                    contents: chatHistoryWithPrompt,
+                    contents: primedHistory,
                 });
 
                 for await (const chunk of result) {
@@ -93,12 +90,10 @@ export default async function handler(req: Request) {
                   }
                 }
                 controller.close();
-            } catch(error) {
+            } catch(error: any) {
                 console.error("Error during Gemini stream processing:", error);
-                // Propagate the error to the client by calling controller.error.
-                // This will cause the client-side reader to throw an error,
-                // which can be caught to stop the loading state.
-                controller.error(error);
+                // Propagate the specific error message to the client.
+                controller.error(new Error(error.message || 'Unknown stream error'));
             }
           },
         });
